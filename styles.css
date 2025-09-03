@@ -4300,3 +4300,226 @@ body {
         padding: 16px;
     }
 }
+
+/* 통합 버튼 스타일 */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+    white-space: nowrap;
+    min-height: 44px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn i {
+    font-size: 16px;
+}
+
+/* Primary 버튼 */
+.btn.primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn.primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: linear-gradient(135deg, #e6004a, #ff2d92);
+}
+
+.btn.primary:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: var(--shadow-md);
+}
+
+/* Secondary 버튼 */
+.btn.secondary {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 2px solid var(--gray-300);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn.secondary:hover:not(:disabled) {
+    background: var(--bg-secondary);
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn.secondary:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Success 버튼 */
+.btn.success {
+    background: linear-gradient(135deg, var(--success-color), #28a745);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn.success:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: linear-gradient(135deg, #2ea043, #28a745);
+}
+
+/* Warning 버튼 */
+.btn.warning {
+    background: linear-gradient(135deg, var(--warning-color), #ff8c00);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn.warning:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: linear-gradient(135deg, #e6850e, #ff8c00);
+}
+
+/* Danger 버튼 */
+.btn.danger {
+    background: linear-gradient(135deg, var(--error-color), #dc3545);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn.danger:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: linear-gradient(135deg, #e6342a, #dc3545);
+}
+
+/* 버튼 크기 변형 */
+.btn.small {
+    padding: 8px 16px;
+    font-size: 12px;
+    min-height: 36px;
+}
+
+.btn.small i {
+    font-size: 14px;
+}
+
+.btn.large {
+    padding: 16px 32px;
+    font-size: 16px;
+    min-height: 52px;
+}
+
+.btn.large i {
+    font-size: 18px;
+}
+
+/* 전체 너비 버튼 */
+.btn.full-width {
+    width: 100%;
+}
+
+/* 아이콘만 있는 버튼 */
+.btn.icon-only {
+    padding: 12px;
+    min-width: 44px;
+}
+
+.btn.icon-only.small {
+    padding: 8px;
+    min-width: 36px;
+}
+
+.btn.icon-only.large {
+    padding: 16px;
+    min-width: 52px;
+}
+
+/* 로딩 상태 */
+.btn.loading {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 버튼 그룹 */
+.btn-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-group.vertical {
+    flex-direction: column;
+}
+
+.btn-group.full-width .btn {
+    flex: 1;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .btn {
+        padding: 10px 16px;
+        font-size: 13px;
+        min-height: 40px;
+    }
+    
+    .btn.small {
+        padding: 6px 12px;
+        font-size: 11px;
+        min-height: 32px;
+    }
+    
+    .btn.large {
+        padding: 14px 24px;
+        font-size: 15px;
+        min-height: 48px;
+    }
+    
+    .btn-group {
+        gap: 6px;
+    }
+    
+    .btn-group.mobile-stack {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-group.mobile-stack .btn {
+        width: 100%;
+    }
+}
