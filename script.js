@@ -2531,14 +2531,13 @@ function processBankTransfer() {
         `계좌 이체로 ${credits.toLocaleString()} 크레딧을 충전하시겠습니까?\n\n` +
         `결제 금액: ${price.toLocaleString()}원\n` +
         `입금 계좌: 국민은행 123456-78-901234 (주)쇼핑파인더\n\n` +
-        `입금 후 자동으로 크레딧이 충전됩니다.`
+        `입금 확인 후 크레딧이 충전됩니다.\n` +
+        `입금자명에 회원가입 시 사용한 이메일을 포함해주세요.`
     );
     
     if (confirmPayment) {
-        // 실제로는 결제 확인 후 충전되어야 하지만, 데모용으로 즉시 충전
-        addCredits(credits);
-        
-        showToast(`${credits.toLocaleString()} 크레딧이 충전되었습니다! 💰`, 'success');
+        // 결제 대기 상태로 처리
+        showBankTransferInstructions(credits, price);
         
         // 모달 닫기
         const modal = document.querySelector('.charge-modal');
@@ -2547,6 +2546,148 @@ function processBankTransfer() {
         }
         
         selectedCreditPackage = null;
+    }
+}
+
+function showBankTransferInstructions(credits, price) {
+    const instructionModal = document.createElement('div');
+    instructionModal.className = 'bank-transfer-modal';
+    
+    instructionModal.innerHTML = `
+        <div class="bank-transfer-content">
+            <div class="bank-transfer-header">
+                <h2><i class="fas fa-university"></i> 계좌 이체 안내</h2>
+                <button class="modal-close-btn-floating" onclick="this.closest('.bank-transfer-modal').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="bank-transfer-body">
+                <div class="transfer-info">
+                    <h3>입금 정보</h3>
+                    <div class="transfer-details">
+                        <div class="transfer-item">
+                            <span class="transfer-label">은행명</span>
+                            <span class="transfer-value">국민은행</span>
+                        </div>
+                        <div class="transfer-item">
+                            <span class="transfer-label">계좌번호</span>
+                            <span class="transfer-value">123456-78-901234</span>
+                            <button class="copy-btn" onclick="copyToClipboard('123456-78-901234')">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <div class="transfer-item">
+                            <span class="transfer-label">예금주</span>
+                            <span class="transfer-value">(주)쇼핑파인더</span>
+                        </div>
+                        <div class="transfer-item">
+                            <span class="transfer-label">입금액</span>
+                            <span class="transfer-value highlight">${price.toLocaleString()}원</span>
+                        </div>
+                        <div class="transfer-item">
+                            <span class="transfer-label">충전 크레딧</span>
+                            <span class="transfer-value highlight">${credits.toLocaleString()} 크레딧</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="transfer-instructions">
+                    <h3>입금 시 주의사항</h3>
+                    <ul>
+                        <li><i class="fas fa-check"></i> 입금자명에 <strong>회원가입 이메일</strong>을 포함해주세요</li>
+                        <li><i class="fas fa-check"></i> 정확한 금액을 입금해주세요 (${price.toLocaleString()}원)</li>
+                        <li><i class="fas fa-check"></i> 입금 확인은 <strong>평일 기준 1-2시간</strong> 소요됩니다</li>
+                        <li><i class="fas fa-check"></i> 주말/공휴일은 확인이 지연될 수 있습니다</li>
+                    </ul>
+                </div>
+                
+                <div class="transfer-status">
+                    <div class="status-message">
+                        <i class="fas fa-clock"></i>
+                        <span>입금 확인 대기 중입니다</span>
+                    </div>
+                    <p>입금이 확인되면 자동으로 크레딧이 충전됩니다.</p>
+                </div>
+            </div>
+            
+            <div class="bank-transfer-footer">
+                <button class="btn secondary" onclick="this.closest('.bank-transfer-modal').remove()">
+                    <i class="fas fa-times"></i>
+                    닫기
+                </button>
+                <button class="btn primary" onclick="checkPaymentStatus()">
+                    <i class="fas fa-refresh"></i>
+                    입금 확인
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(instructionModal);
+    
+    setTimeout(() => {
+        instructionModal.classList.add('show');
+    }, 10);
+    
+    // 결제 대기 목록에 추가 (실제로는 서버에서 관리)
+    addPendingPayment(credits, price);
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('계좌번호가 복사되었습니다', 'success');
+    }).catch(() => {
+        showToast('복사에 실패했습니다', 'error');
+    });
+}
+
+function addPendingPayment(credits, price) {
+    const pendingPayment = {
+        id: Date.now(),
+        credits: credits,
+        price: price,
+        timestamp: new Date().toISOString(),
+        status: 'pending',
+        userEmail: currentUser?.email || 'guest'
+    };
+    
+    let pendingPayments = JSON.parse(localStorage.getItem('pendingPayments')) || [];
+    pendingPayments.push(pendingPayment);
+    localStorage.setItem('pendingPayments', JSON.stringify(pendingPayments));
+    
+    showToast(`${credits.toLocaleString()} 크레딧 충전 요청이 접수되었습니다`, 'info');
+}
+
+function checkPaymentStatus() {
+    // 실제로는 서버에서 결제 상태를 확인해야 함
+    // 데모용으로 랜덤하게 결제 완료 처리
+    const isPaymentConfirmed = Math.random() > 0.7; // 30% 확률로 결제 완료
+    
+    if (isPaymentConfirmed) {
+        const pendingPayments = JSON.parse(localStorage.getItem('pendingPayments')) || [];
+        const latestPayment = pendingPayments[pendingPayments.length - 1];
+        
+        if (latestPayment && latestPayment.status === 'pending') {
+            // 결제 완료 처리
+            latestPayment.status = 'completed';
+            localStorage.setItem('pendingPayments', JSON.stringify(pendingPayments));
+            
+            // 크레딧 충전
+            addCredits(latestPayment.credits);
+            
+            showToast(`입금이 확인되었습니다! ${latestPayment.credits.toLocaleString()} 크레딧이 충전되었습니다! 💰`, 'success');
+            
+            // 모달 닫기
+            const modal = document.querySelector('.bank-transfer-modal');
+            if (modal) {
+                modal.remove();
+            }
+        } else {
+            showToast('입금이 아직 확인되지 않았습니다', 'info');
+        }
+    } else {
+        showToast('입금이 아직 확인되지 않았습니다. 잠시 후 다시 확인해주세요.', 'info');
     }
 }
 
@@ -5831,6 +5972,8 @@ window.goBackToPackages = goBackToPackages;
 window.processCardPayment = processCardPayment;
 window.processBankTransfer = processBankTransfer;
 window.chargeCreditsForUser = chargeCreditsForUser;
+window.copyToClipboard = copyToClipboard;
+window.checkPaymentStatus = checkPaymentStatus;
 
 // 앱 초기화 완료 로그
 console.log('🎉 쇼핑파인더가 준비되었습니다!');
