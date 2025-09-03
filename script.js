@@ -26,24 +26,9 @@ const LANGUAGE_CONFIG = {
     ru: { name: 'Русский', flag: '🇷🇺' }
 };
 
-// DOM 요소들
-const searchInput = document.getElementById('searchInput');
-const countrySelect = document.getElementById('countrySelect');
-const searchBtn = document.getElementById('searchBtn');
-const clearBtn = document.getElementById('clearBtn');
-const resultsSection = document.getElementById('resultsSection');
-const loadingSpinner = document.getElementById('loadingSpinner');
-const resultsList = document.getElementById('resultsList');
-const resultsCount = document.getElementById('resultsCount');
-const emptyState = document.getElementById('emptyState');
-
-// 페이지네이션 DOM 요소들
-const resultsPerPageSelect = document.getElementById('resultsPerPage');
-const paginationContainer = document.getElementById('paginationContainer');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-const pageNumbers = document.getElementById('pageNumbers');
-const paginationInfo = document.getElementById('paginationInfo');
+// DOM 요소들 (DOMContentLoaded 후에 초기화됨)
+let searchInput, countrySelect, searchBtn, clearBtn, resultsSection, loadingSpinner, resultsList, resultsCount, emptyState;
+let resultsPerPageSelect, paginationContainer, prevBtn, nextBtn, pageNumbers, paginationInfo;
 
 // 페이지네이션 관련 변수들
 let currentQuery = '';
@@ -64,6 +49,32 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
+    // DOM 요소들 초기화
+    searchInput = document.getElementById('searchInput');
+    countrySelect = document.getElementById('countrySelect');
+    searchBtn = document.getElementById('searchBtn');
+    clearBtn = document.getElementById('clearBtn');
+    resultsSection = document.getElementById('resultsSection');
+    loadingSpinner = document.getElementById('loadingSpinner');
+    resultsList = document.getElementById('resultsList');
+    resultsCount = document.getElementById('resultsCount');
+    emptyState = document.getElementById('emptyState');
+    resultsPerPageSelect = document.getElementById('resultsPerPage');
+    paginationContainer = document.getElementById('paginationContainer');
+    prevBtn = document.getElementById('prevBtn');
+    nextBtn = document.getElementById('nextBtn');
+    pageNumbers = document.getElementById('pageNumbers');
+    paginationInfo = document.getElementById('paginationInfo');
+    
+    // DOM 요소 존재 확인
+    if (!searchInput || !searchBtn) {
+        console.error('필수 DOM 요소를 찾을 수 없습니다.');
+        return;
+    }
+    
+    // 크레딧 표시 초기화
+    updateCreditDisplay();
+    
     // 검색 버튼 클릭 이벤트
     searchBtn.addEventListener('click', function() {
         console.log('🔍 검색 버튼 클릭됨');
@@ -78,46 +89,54 @@ function initializeApp() {
     });
     
     // 검색어 클리어 버튼
-    clearBtn.addEventListener('click', function() {
-        searchInput.value = '';
-        searchInput.focus();
-    });
-    
-    // 검색어 입력 시 클리어 버튼 표시/숨김
-    searchInput.addEventListener('input', function() {
-        if (this.value.trim()) {
-            clearBtn.style.opacity = '1';
-            clearBtn.style.visibility = 'visible';
-        } else {
-            clearBtn.style.opacity = '0';
-            clearBtn.style.visibility = 'hidden';
-        }
-    });
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            searchInput.focus();
+        });
+        
+        // 검색어 입력 시 클리어 버튼 표시/숨김
+        searchInput.addEventListener('input', function() {
+            if (this.value.trim()) {
+                clearBtn.style.opacity = '1';
+                clearBtn.style.visibility = 'visible';
+            } else {
+                clearBtn.style.opacity = '0';
+                clearBtn.style.visibility = 'hidden';
+            }
+        });
+    }
     
     // 페이지네이션 버튼 이벤트
-    prevBtn.addEventListener('click', function() {
-        if (currentPage > 1) {
-            goToPage(currentPage - 1);
-        }
-    });
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            if (currentPage > 1) {
+                goToPage(currentPage - 1);
+            }
+        });
+    }
     
-    nextBtn.addEventListener('click', function() {
-        const totalPages = Math.ceil(allResults.length / resultsPerPage);
-        if (currentPage < totalPages) {
-            goToPage(currentPage + 1);
-        }
-    });
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            const totalPages = Math.ceil(allResults.length / resultsPerPage);
+            if (currentPage < totalPages) {
+                goToPage(currentPage + 1);
+            }
+        });
+    }
     
     // 페이지당 결과 수 변경
-    resultsPerPageSelect.addEventListener('change', function() {
-        resultsPerPage = parseInt(this.value);
-        if (allResults.length > 0) {
-            currentPage = 1;
-            displayPage(allResults, currentPage);
-            const totalPages = Math.ceil(allResults.length / resultsPerPage);
-            setupPagination(totalPages, allResults.length);
-        }
-    });
+    if (resultsPerPageSelect) {
+        resultsPerPageSelect.addEventListener('change', function() {
+            resultsPerPage = parseInt(this.value);
+            if (allResults.length > 0) {
+                currentPage = 1;
+                displayPage(allResults, currentPage);
+                    const totalPages = Math.ceil(allResults.length / resultsPerPage);
+                setupPagination(totalPages, allResults.length);
+            }
+        });
+    }
     
     // 무한 스크롤 비활성화 - 페이지네이션 사용
     // window.addEventListener('scroll', handleScroll);
