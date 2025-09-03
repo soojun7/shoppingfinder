@@ -2516,7 +2516,7 @@ function goBackToPackages() {
 }
 
 function processCardPayment() {
-    showToast('카드 결제 기능은 준비 중입니다', 'info');
+    showToast('카드 결제 기능은 준비 중입니다 💳', 'info');
 }
 
 function processBankTransfer() {
