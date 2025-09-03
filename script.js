@@ -2242,9 +2242,18 @@ function showEmptyFavorites() {
 }
 
 // 크레딧 관리 시스템
-let userCredits = parseInt(localStorage.getItem('userCredits')) || 10;
+let userCredits;
+
+// 크레딧 초기화 함수
+function initializeCredits() {
+    if (typeof userCredits === 'undefined') {
+        userCredits = parseInt(localStorage.getItem('userCredits')) || 10;
+    }
+    return userCredits;
+}
 
 function updateCreditDisplay() {
+    initializeCredits(); // 크레딧 초기화 보장
     const creditAmountElement = document.getElementById('creditAmount');
     if (creditAmountElement) {
         creditAmountElement.textContent = userCredits.toLocaleString();
@@ -2252,6 +2261,7 @@ function updateCreditDisplay() {
 }
 
 async function deductCredits(amount) {
+    initializeCredits(); // 크레딧 초기화 보장
     if (userCredits >= amount) {
         userCredits -= amount;
         
@@ -2275,6 +2285,7 @@ async function deductCredits(amount) {
 }
 
 async function addCredits(amount) {
+    initializeCredits(); // 크레딧 초기화 보장
     userCredits += amount;
     
     // Supabase에 업데이트
@@ -2374,7 +2385,7 @@ function createChargeModal() {
             <div class="charge-modal-body">
                 <div class="current-credit">
                     <span class="current-credit-label">현재 크레딧</span>
-                    <span class="current-credit-amount">${userCredits.toLocaleString()}</span>
+                    <span class="current-credit-amount">${(typeof userCredits !== 'undefined' ? userCredits : 0).toLocaleString()}</span>
                 </div>
                 
                 <div class="charge-options">
@@ -2425,9 +2436,10 @@ function createChargeModal() {
 
 function chargeCredits(amount) {
     // 실제로는 결제 시스템과 연동
+    const currentCredits = typeof userCredits !== 'undefined' ? userCredits : 0;
     const confirmPayment = confirm(
         `${amount} 크레딧을 충전하시겠습니까?\n\n` +
-        `충전 후 총 크레딧: ${(userCredits + amount).toLocaleString()}`
+        `충전 후 총 크레딧: ${(currentCredits + amount).toLocaleString()}`
     );
     
     if (confirmPayment) {
