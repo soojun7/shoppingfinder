@@ -1,0 +1,23 @@
+{
+  "name": "shopping-finder",
+  "version": "1.0.0",
+  "description": "TikTok 쇼핑 파인더 - 비디오 검색 및 제품 찾기",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python3 -m http.server 8080",
+    "build": "echo 'Static site - no build needed'",
+    "start": "echo 'Static site deployed'"
+  },
+  "keywords": [
+    "tiktok",
+    "shopping",
+    "video",
+    "search",
+    "finder"
+  ],
+  "author": "Shopping Finder Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

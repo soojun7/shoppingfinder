@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제품 검색 결과 - 쇼핑파인더</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .product-search-results {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .search-header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .search-header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+        
+        .search-header p {
+            margin: 0 0 1.5rem 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .original-image {
+            max-width: 300px;
+            max-height: 200px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            object-fit: cover;
+        }
+        
+        .search-content {
+            padding: 2rem;
+        }
+        
+        .search-info {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid #ff6b6b;
+        }
+        
+        .search-info h3 {
+            margin: 0 0 0.5rem 0;
+            color: #333;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .search-info p {
+            margin: 0;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .product-item {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .product-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .product-item h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .product-item p {
+            margin: 0 0 1.5rem 0;
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        
+        .product-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        
+        .product-link:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+        }
+        
+        .no-results i {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            color: #ddd;
+        }
+        
+        .no-results h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .no-results p {
+            margin: 0;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .action-buttons {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid #e5e7eb;
+            background: #f8fafc;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            transform: translateY(-1px);
+        }
+        
+        .loading-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+        }
+        
+        .loading-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #ff6b6b;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .error-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+        }
+        
+        .error-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #ef4444;
+        }
+        
+        .error-state h3 {
+            margin: 0 0 1rem 0;
+            color: #333;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        /* 모바일 대응 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .search-header {
+                padding: 1.5rem;
+            }
+            
+            .search-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .search-content {
+                padding: 1.5rem;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .product-item {
+                padding: 1.25rem;
+            }
+            
+            .original-image {
+                max-width: 250px;
+            }
+            
+            .action-buttons {
+                padding: 1.5rem;
+            }
+            
+            .btn {
+                display: block;
+                margin: 0.5rem 0;
+                text-align: center;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="product-search-results">
+        <div class="search-header">
+            <h1><i class="fas fa-search"></i> 제품 검색 결과</h1>
+            <p>선택한 영역에서 찾은 제품들입니다</p>
+            <img id="originalImage" alt="검색한 이미지" class="original-image" style="display: none;">
+        </div>
+        
+        <div class="search-content">
+            <div class="search-info">
+                <h3><i class="fas fa-info-circle"></i> 검색 정보</h3>
+                <p>Google Lens API를 사용하여 이미지에서 제품을 검색했습니다. 더 정확한 결과를 위해 제품이 명확하게 보이는 영역을 선택해주세요.</p>
+            </div>
+            
+            <!-- 로딩 상태 -->
+            <div id="loadingState" class="loading-state">
+                <i class="fas fa-spinner"></i>
+                <h3>제품을 검색하고 있습니다...</h3>
+                <p>잠시만 기다려주세요</p>
+            </div>
+            
+            <!-- 오류 상태 -->
+            <div id="errorState" class="error-state" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>검색 중 오류가 발생했습니다</h3>
+                <p>네트워크 연결을 확인하고 다시 시도해주세요</p>
+            </div>
+            
+            <!-- 결과 없음 -->
+            <div id="noResults" class="no-results" style="display: none;">
+                <i class="fas fa-search"></i>
+                <h3>검색 결과가 없습니다</h3>
+                <p>다른 영역을 선택하여 다시 시도해보세요</p>
+            </div>
+            
+            <!-- 검색 결과 -->
+            <div id="resultsGrid" class="results-grid" style="display: none;">
+                <!-- 결과가 여기에 동적으로 추가됩니다 -->
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-secondary" onclick="window.close()">
+                <i class="fas fa-times"></i> 닫기
+            </button>
+            <a href="index.html" class="btn btn-primary">
+                <i class="fas fa-home"></i> 메인으로
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // URL 파라미터에서 데이터 가져오기
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                image: params.get('image'),
+                results: params.get('results')
+            };
+        }
+        
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = getUrlParams();
+            
+            // 원본 이미지 표시
+            if (params.image) {
+                const originalImage = document.getElementById('originalImage');
+                originalImage.src = params.image;
+                originalImage.style.display = 'block';
+            }
+            
+            // 검색 결과 처리
+            if (params.results) {
+                try {
+                    const results = JSON.parse(decodeURIComponent(params.results));
+                    displayResults(results);
+                } catch (error) {
+                    console.error('결과 파싱 오류:', error);
+                    showError();
+                }
+            } else {
+                // 실제 API 호출 시뮬레이션
+                setTimeout(() => {
+                    // 데모용 결과 표시
+                    showNoResults();
+                }, 2000);
+            }
+        });
+        
+        function displayResults(results) {
+            const loadingState = document.getElementById('loadingState');
+            const resultsGrid = document.getElementById('resultsGrid');
+            
+            loadingState.style.display = 'none';
+            
+            if (results.data && results.data.length > 0) {
+                resultsGrid.innerHTML = results.data.map(item => `
+                    <div class="product-item">
+                        <h3>${item.title || '제품명 없음'}</h3>
+                        <p>${item.description || '설명 없음'}</p>
+                        ${item.link ? `
+                            <a href="${item.link}" target="_blank" class="product-link">
+                                <i class="fas fa-external-link-alt"></i>
+                                자세히 보기
+                            </a>
+                        ` : ''}
+                    </div>
+                `).join('');
+                resultsGrid.style.display = 'grid';
+            } else {
+                showNoResults();
+            }
+        }
+        
+        function showNoResults() {
+            const loadingState = document.getElementById('loadingState');
+            const noResults = document.getElementById('noResults');
+            
+            loadingState.style.display = 'none';
+            noResults.style.display = 'block';
+        }
+        
+        function showError() {
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            
+            loadingState.style.display = 'none';
+            errorState.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

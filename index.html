@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>쇼핑파인더 - TikTok 검색</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="settings-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 사이드바 오버레이 -->
+        <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+        
+        <!-- 좌측 사이드바 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fab fa-tiktok"></i>
+                    <span>Shopping Finder</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active">
+                        <a href="#" class="nav-link" onclick="showSearch(event)">
+                            <i class="fas fa-search"></i>
+                            <span>검색</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showFavorites(event)">
+                            <i class="fas fa-heart"></i>
+                            <span>즐겨찾기</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="openSettingsModal()">
+                            <i class="fas fa-cog"></i>
+                            <span>설정</span>
+                        </a>
+                    </li>
+                    <li class="nav-item admin-only" id="adminNavItem" style="display: none;">
+                        <a href="admin.html" class="nav-link">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>관리자</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="credit-section">
+                    <div class="credit-info">
+                        <div class="credit-header">
+                            <i class="fas fa-coins"></i>
+                            <span class="credit-label">크레딧</span>
+                        </div>
+                        <div class="credit-amount" id="creditAmount">1,250</div>
+                    </div>
+                    <button class="charge-btn" onclick="openChargeModal()">
+                        <i class="fas fa-plus"></i>
+                        충전
+                    </button>
+                </div>
+                
+                <div class="user-profile">
+                    <div class="avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <span class="username">사용자</span>
+                        <span class="status">온라인</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 메인 컨텐츠 -->
+        <main class="main-content">
+            <!-- 모바일 헤더 -->
+            <div class="mobile-header">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="mobile-logo">
+                    <i class="fab fa-tiktok"></i>
+                    <span>Shopping Finder</span>
+                </div>
+            </div>
+            
+            <div class="content-wrapper">
+                <!-- 검색 섹션 -->
+                <section class="search-section">
+                    
+                    <div class="search-container">
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search search-icon"></i>
+                            <input 
+                                type="text" 
+                                id="searchInput" 
+                                class="search-input" 
+                                placeholder="전 세계 TikTok 쇼핑 콘텐츠를 다양한 언어로 검색해보세요"
+                                autocomplete="off"
+                            >
+                            <button class="clear-btn" id="clearBtn">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="search-options">
+                            <div class="country-selector">
+                                <label for="countrySelect">검색 국가:</label>
+                                <select id="countrySelect" class="country-select">
+                                    <option value="ko">🇰🇷 한국</option>
+                                    <option value="en">🇺🇸 미국</option>
+                                    <option value="ja">🇯🇵 일본</option>
+                                    <option value="zh">🇨🇳 중국</option>
+                                    <option value="es">🇪🇸 스페인</option>
+                                    <option value="fr">🇫🇷 프랑스</option>
+                                    <option value="de">🇩🇪 독일</option>
+                                    <option value="it">🇮🇹 이탈리아</option>
+                                    <option value="pt">🇧🇷 브라질</option>
+                                    <option value="ru">🇷🇺 러시아</option>
+                                </select>
+                            </div>
+                            
+                            <button class="search-btn" id="searchBtn">
+                                <i class="fas fa-search"></i>
+                                검색
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 검색 결과 섹션 -->
+                <section class="results-section" id="resultsSection">
+                    <div class="results-header">
+                        <div class="results-info">
+                            <h2>검색 결과</h2>
+                            <div class="results-count" id="resultsCount">0개의 결과</div>
+                        </div>
+                        
+                        <div class="results-controls">
+                            <div class="results-per-page">
+                                <label for="resultsPerPage">페이지당 결과:</label>
+                                <select id="resultsPerPage" class="results-select">
+                                    <option value="18" selected>18개</option>
+                                    <option value="36">36개</option>
+                                    <option value="54">54개</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="loading-spinner" id="loadingSpinner">
+                        <div class="spinner"></div>
+                        <p>검색 중...</p>
+                    </div>
+                    
+                    <div class="results-list" id="resultsList">
+                        <!-- 검색 결과가 여기에 동적으로 추가됩니다 -->
+                    </div>
+                    
+                    <div class="pagination-container" id="paginationContainer">
+                        <div class="pagination">
+                            <button class="pagination-btn prev-btn" id="prevBtn" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                                이전
+                            </button>
+                            
+                            <div class="page-numbers" id="pageNumbers">
+                                <!-- 페이지 번호들이 동적으로 추가됩니다 -->
+                            </div>
+                            
+                            <button class="pagination-btn next-btn" id="nextBtn" disabled>
+                                다음
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="pagination-info" id="paginationInfo">
+                            <!-- 페이지 정보가 여기에 표시됩니다 -->
+                        </div>
+                    </div>
+                    
+                    <div class="empty-state" id="emptyState">
+                        <i class="fas fa-search"></i>
+                        <h3>검색 결과가 없습니다</h3>
+                        <p>다른 검색어나 국가를 선택해보세요</p>
+                    </div>
+                </section>
+
+                <!-- 즐겨찾기 섹션 -->
+                <section class="favorites-section" id="favoritesSection" style="display: none;">
+                    <div class="section-header">
+                        <h2><i class="fas fa-heart"></i> 즐겨찾기</h2>
+                        <p>저장한 비디오들을 관리하세요</p>
+                    </div>
+
+                    <div class="favorites-content">
+                        <div class="favorites-empty" id="favoritesEmpty">
+                            <div class="empty-state">
+                                <i class="fas fa-heart-broken"></i>
+                                <h3>아직 즐겨찾기가 없습니다</h3>
+                                <p>마음에 드는 비디오를 즐겨찾기에 추가해보세요!</p>
+                                <button class="btn-primary" onclick="showSearch()">
+                                    <i class="fas fa-search"></i>
+                                    비디오 검색하기
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="favorites-grid" id="favoritesGrid" style="display: none;">
+                            <!-- 즐겨찾기 비디오들이 여기에 표시됩니다 -->
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- 로그인/회원가입 모달 -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-modal-content">
+            <button class="modal-close-btn-floating" onclick="closeAuthModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <!-- 로그인 폼 -->
+            <div class="auth-form login-form" id="loginForm">
+                <div class="auth-header">
+                    <div class="auth-logo">
+                        <i class="fab fa-tiktok"></i>
+                        <span>Shopping Finder</span>
+                    </div>
+                    <h2>로그인</h2>
+                    <p>쇼핑파인더에 오신 것을 환영합니다!</p>
+                </div>
+                
+                <form class="auth-form-content" onsubmit="handleLogin(event)">
+                    <div class="input-group">
+                        <label for="loginEmail">이메일</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="loginEmail" required placeholder="이메일을 입력하세요">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="loginPassword">비밀번호</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="loginPassword" required placeholder="비밀번호를 입력하세요">
+                            <button type="button" class="toggle-password" onclick="togglePassword('loginPassword')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="auth-options">
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" id="rememberMe">
+                            <span class="checkmark"></span>
+                            로그인 상태 유지
+                        </label>
+                        <a href="#" class="forgot-password">비밀번호 찾기</a>
+                    </div>
+                    
+                    <button type="submit" class="auth-btn primary">
+                        <i class="fas fa-sign-in-alt"></i>
+                        로그인
+                    </button>
+                    
+                    <div class="auth-divider">
+                        <span>또는</span>
+                    </div>
+                    
+                    <div class="social-login">
+                        <button type="button" class="social-btn google" onclick="loginWithGoogle()">
+                            <i class="fab fa-google"></i>
+                            Google로 로그인
+                        </button>
+                        <button type="button" class="social-btn kakao" onclick="loginWithKakao()">
+                            <i class="fas fa-comment"></i>
+                            카카오로 로그인
+                        </button>
+                    </div>
+                    
+                    <div class="auth-switch">
+                        <span>계정이 없으신가요?</span>
+                        <a href="#" onclick="switchToSignup()">회원가입</a>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- 회원가입 폼 -->
+            <div class="auth-form signup-form" id="signupForm" style="display: none;">
+                <div class="auth-header">
+                    <div class="auth-logo">
+                        <i class="fab fa-tiktok"></i>
+                        <span>Shopping Finder</span>
+                    </div>
+                    <h2>회원가입</h2>
+                    <p>새로운 계정을 만들어보세요!</p>
+                </div>
+                
+                <form class="auth-form-content" onsubmit="handleSignup(event)">
+                    <div class="input-group">
+                        <label for="signupName">이름</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="signupName" required placeholder="이름을 입력하세요">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="signupEmail">이메일</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="signupEmail" required placeholder="이메일을 입력하세요">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="signupPassword">비밀번호</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="signupPassword" required placeholder="비밀번호를 입력하세요">
+                            <button type="button" class="toggle-password" onclick="togglePassword('signupPassword')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength" id="passwordStrength">
+                            <div class="strength-bar">
+                                <div class="strength-fill"></div>
+                            </div>
+                            <span class="strength-text">비밀번호 강도</span>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="confirmPassword">비밀번호 확인</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="confirmPassword" required placeholder="비밀번호를 다시 입력하세요">
+                        </div>
+                    </div>
+                    
+                    <div class="auth-options">
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" id="agreeTerms" required>
+                            <span class="checkmark"></span>
+                            <a href="#" class="terms-link">이용약관</a> 및 <a href="#" class="privacy-link">개인정보처리방침</a>에 동의합니다
+                        </label>
+                        
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" id="agreeMarketing">
+                            <span class="checkmark"></span>
+                            마케팅 정보 수신에 동의합니다 (선택)
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="auth-btn primary">
+                        <i class="fas fa-user-plus"></i>
+                        회원가입
+                    </button>
+                    
+                    <div class="auth-divider">
+                        <span>또는</span>
+                    </div>
+                    
+                    <div class="social-login">
+                        <button type="button" class="social-btn google" onclick="signupWithGoogle()">
+                            <i class="fab fa-google"></i>
+                            Google로 가입
+                        </button>
+                        <button type="button" class="social-btn kakao" onclick="signupWithKakao()">
+                            <i class="fas fa-comment"></i>
+                            카카오로 가입
+                        </button>
+                    </div>
+                    
+                    <div class="auth-switch">
+                        <span>이미 계정이 있으신가요?</span>
+                        <a href="#" onclick="switchToLogin()">로그인</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 설정 모달 -->
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-modal-content">
+            <div class="settings-header">
+                <h2><i class="fas fa-cog"></i> 설정</h2>
+                <button class="modal-close-btn" onclick="closeSettingsModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="settings-body">
+                <div class="settings-tabs">
+                    <div class="settings-tab-buttons">
+                        <button class="settings-tab-btn active" onclick="showSettingsTab('general')">
+                            <i class="fas fa-sliders-h"></i>
+                            일반 설정
+                        </button>
+                        <button class="settings-tab-btn" onclick="showSettingsTab('download')">
+                            <i class="fas fa-download"></i>
+                            다운로드 설정
+                        </button>
+                        <button class="settings-tab-btn" onclick="showSettingsTab('api')">
+                            <i class="fas fa-key"></i>
+                            API 설정
+                        </button>
+                    </div>
+                    
+                    <!-- 일반 설정 탭 -->
+                    <div class="settings-tab-content" id="generalTab">
+                        <div class="settings-section">
+                            <h3>언어 설정</h3>
+                            <div class="setting-item">
+                                <label for="languageSelect">인터페이스 언어</label>
+                                <select id="languageSelect" class="setting-input">
+                                    <option value="ko">한국어</option>
+                                    <option value="en">English</option>
+                                    <option value="ja">日本語</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-section">
+                            <h3>알림 설정</h3>
+                            <div class="setting-item">
+                                <label class="setting-checkbox">
+                                    <input type="checkbox" id="enableNotifications" checked>
+                                    <span class="checkmark"></span>
+                                    알림 활성화
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <label class="setting-checkbox">
+                                    <input type="checkbox" id="enableSounds" checked>
+                                    <span class="checkmark"></span>
+                                    알림음 활성화
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 다운로드 설정 탭 -->
+                    <div class="settings-tab-content" id="downloadTab" style="display: none;">
+                        <div class="settings-section">
+                            <h3>다운로드 경로</h3>
+                            <div class="setting-item">
+                                <label for="downloadPath">기본 다운로드 폴더</label>
+                                <div class="path-input-group">
+                                    <input type="text" id="downloadPath" class="setting-input" placeholder="다운로드 경로를 선택하세요" readonly>
+                                    <button class="browse-btn" onclick="selectDownloadPath()">
+                                        <i class="fas fa-folder-open"></i>
+                                        찾아보기
+                                    </button>
+                                </div>
+                                <small class="setting-help">비디오 파일이 저장될 기본 폴더를 선택하세요</small>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-section">
+                            <h3>다운로드 옵션</h3>
+                            <div class="setting-item">
+                                <label for="videoQuality">비디오 품질</label>
+                                <select id="videoQuality" class="setting-input">
+                                    <option value="highest">최고 품질</option>
+                                    <option value="high" selected>고품질</option>
+                                    <option value="medium">중간 품질</option>
+                                    <option value="low">저품질</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label for="fileNameFormat">파일명 형식</label>
+                                <select id="fileNameFormat" class="setting-input">
+                                    <option value="original">원본 제목</option>
+                                    <option value="timestamp" selected>날짜_시간_제목</option>
+                                    <option value="custom">사용자 정의</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label class="setting-checkbox">
+                                    <input type="checkbox" id="createSubfolders" checked>
+                                    <span class="checkmark"></span>
+                                    날짜별 하위 폴더 생성
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- API 설정 탭 -->
+                    <div class="settings-tab-content" id="apiTab" style="display: none;">
+                        <div class="settings-section">
+                            <h3>쿠팡파트너스 API</h3>
+                            <div class="setting-item">
+                                <label for="coupangAccessKey">Access Key</label>
+                                <input type="text" id="coupangAccessKey" class="setting-input" placeholder="쿠팡파트너스 Access Key를 입력하세요">
+                                <small class="setting-help">쿠팡파트너스에서 발급받은 Access Key를 입력하세요</small>
+                            </div>
+                            <div class="setting-item">
+                                <label for="coupangSecretKey">Secret Key</label>
+                                <div class="password-input-group">
+                                    <input type="password" id="coupangSecretKey" class="setting-input" placeholder="쿠팡파트너스 Secret Key를 입력하세요">
+                                    <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('coupangSecretKey')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <small class="setting-help">쿠팡파트너스에서 발급받은 Secret Key를 입력하세요</small>
+                            </div>
+                            <div class="setting-item">
+                                <button class="test-api-btn" onclick="testCoupangAPI()">
+                                    <i class="fas fa-plug"></i>
+                                    API 연결 테스트
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-section">
+                            <h3>기타 API 설정</h3>
+                            <div class="setting-item">
+                                <label class="setting-checkbox">
+                                    <input type="checkbox" id="enableAutoAffiliate">
+                                    <span class="checkmark"></span>
+                                    자동 제휴 링크 생성
+                                </label>
+                                <small class="setting-help">검색 결과에 자동으로 제휴 링크를 추가합니다</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-footer">
+                <button class="settings-btn secondary" onclick="resetSettings()">
+                    <i class="fas fa-undo"></i>
+                    초기화
+                </button>
+                <button class="settings-btn primary" onclick="saveSettings()">
+                    <i class="fas fa-save"></i>
+                    저장
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

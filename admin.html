@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 패널 - 쇼핑파인더</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="app-container admin-layout">
+        <!-- 사이드바 오버레이 -->
+        <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+        
+        <!-- 관리자 전용 사이드바 -->
+        <aside class="sidebar admin-sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>관리자 패널</span>
+                </div>
+                <a href="index.html" class="back-to-main-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>메인으로</span>
+                </a>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active">
+                        <a href="#" class="nav-link" onclick="showAdminTab('dashboard', event)">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>대시보드</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showAdminTab('users', event)">
+                            <i class="fas fa-users"></i>
+                            <span>사용자 관리</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showAdminTab('credits', event)">
+                            <i class="fas fa-coins"></i>
+                            <span>크레딧 관리</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showAdminTab('system', event)">
+                            <i class="fas fa-cog"></i>
+                            <span>시스템 설정</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showAdminTab('logs', event)">
+                            <i class="fas fa-file-alt"></i>
+                            <span>로그 관리</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showAdminTab('analytics', event)">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>분석</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showAdminTab('notifications', event)">
+                            <i class="fas fa-bell"></i>
+                            <span>알림 관리</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="admin-info">
+                    <div class="admin-avatar">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="admin-details">
+                        <span class="admin-name" id="adminName">관리자</span>
+                        <span class="admin-role">시스템 관리자</span>
+                    </div>
+                </div>
+                
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    로그아웃
+                </button>
+            </div>
+        </aside>
+
+        <!-- 메인 컨텐츠 -->
+        <main class="main-content admin-main">
+            <!-- 모바일 헤더 -->
+            <div class="mobile-header">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="mobile-logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>관리자 패널</span>
+                </div>
+                <a href="index.html" class="mobile-back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+            </div>
+            
+            <div class="content-wrapper">
+                <!-- 대시보드 섹션 -->
+                <section class="admin-section" id="dashboardSection">
+                    <div class="admin-header">
+                        <h1><i class="fas fa-tachometer-alt"></i> 대시보드</h1>
+                        <p>시스템 현황을 한눈에 확인하세요</p>
+                    </div>
+
+                    <div class="admin-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalUsers">0</h3>
+                                <p>총 사용자</p>
+                                <span class="stat-change positive">+12% 이번 달</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalSearches">0</h3>
+                                <p>총 검색 수</p>
+                                <span class="stat-change positive">+8% 이번 주</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalCredits">0</h3>
+                                <p>총 크레딧</p>
+                                <span class="stat-change neutral">변동 없음</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalDownloads">0</h3>
+                                <p>총 다운로드</p>
+                                <span class="stat-change positive">+15% 이번 달</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-charts">
+                        <div class="chart-container">
+                            <h3>사용자 활동</h3>
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-line"></i>
+                                <p>차트 데이터 로딩 중...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <h3>검색 트렌드</h3>
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-bar"></i>
+                                <p>차트 데이터 로딩 중...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recent-activities">
+                        <h3>최근 활동</h3>
+                        <div class="activity-list" id="recentActivities">
+                            <!-- 최근 활동이 여기에 동적으로 추가됩니다 -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 사용자 관리 섹션 -->
+                <section class="admin-section" id="usersSection" style="display: none;">
+                    <div class="admin-header">
+                        <h1><i class="fas fa-users"></i> 사용자 관리</h1>
+                        <p>등록된 사용자들을 관리하고 모니터링하세요</p>
+                    </div>
+
+                    <div class="admin-content">
+                        <div class="admin-controls">
+                            <div class="search-controls">
+                                <div class="search-input-wrapper">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="userSearchInput" placeholder="사용자 검색...">
+                                </div>
+                                <button class="btn primary" onclick="searchUsers()">검색</button>
+                                <button class="btn secondary" onclick="exportUsers()">내보내기</button>
+                            </div>
+                        </div>
+
+                        <div class="users-table-container">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>이름</th>
+                                        <th>이메일</th>
+                                        <th>크레딧</th>
+                                        <th>가입일</th>
+                                        <th>상태</th>
+                                        <th>액션</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <!-- 사용자 목록이 여기에 동적으로 추가됩니다 -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="pagination-container" id="usersPagination">
+                            <!-- 페이지네이션이 여기에 추가됩니다 -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 크레딧 관리 섹션 -->
+                <section class="admin-section" id="creditsSection" style="display: none;">
+                    <div class="admin-header">
+                        <h1><i class="fas fa-coins"></i> 크레딧 관리</h1>
+                        <p>사용자 크레딧을 지급하고 관리하세요</p>
+                    </div>
+
+                    <div class="admin-content">
+                        <div class="credit-management-form">
+                            <h3>크레딧 지급/차감</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="creditUserEmail">사용자 이메일</label>
+                                    <input type="email" id="creditUserEmail" placeholder="사용자 이메일을 입력하세요">
+                                </div>
+                                <div class="form-group">
+                                    <label for="creditAmount">크레딧 수량</label>
+                                    <input type="number" id="creditAmount" placeholder="크레딧 수량">
+                                </div>
+                                <div class="form-group">
+                                    <label for="creditAction">액션</label>
+                                    <select id="creditAction">
+                                        <option value="add">지급</option>
+                                        <option value="deduct">차감</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="creditReason">사유</label>
+                                    <input type="text" id="creditReason" placeholder="크레딧 변경 사유">
+                                </div>
+                            </div>
+                            <button class="btn primary" onclick="manageCreditForUser()">실행</button>
+                        </div>
+                        
+                        <div class="credit-transactions">
+                            <h3>크레딧 거래 내역</h3>
+                            <div class="transactions-filters">
+                                <input type="date" id="transactionDateFrom" placeholder="시작일">
+                                <input type="date" id="transactionDateTo" placeholder="종료일">
+                                <select id="transactionType">
+                                    <option value="all">전체</option>
+                                    <option value="add">지급</option>
+                                    <option value="deduct">차감</option>
+                                    <option value="charge">충전</option>
+                                </select>
+                                <button class="btn secondary" onclick="filterTransactions()">필터</button>
+                            </div>
+                            <div class="transactions-list" id="creditTransactions">
+                                <!-- 거래 내역이 여기에 표시됩니다 -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 시스템 설정 섹션 -->
+                <section class="admin-section" id="systemSection" style="display: none;">
+                    <div class="admin-header">
+                        <h1><i class="fas fa-cog"></i> 시스템 설정</h1>
+                        <p>시스템 전반의 설정을 관리하세요</p>
+                    </div>
+
+                    <div class="admin-content">
+                        <div class="settings-grid">
+                            <div class="settings-card">
+                                <h3>검색 설정</h3>
+                                <div class="setting-item">
+                                    <label for="searchCost">검색 비용 (크레딧)</label>
+                                    <input type="number" id="searchCost" value="1" min="0">
+                                </div>
+                                <div class="setting-item">
+                                    <label for="searchLimit">검색 제한 (분당)</label>
+                                    <input type="number" id="searchLimit" value="5" min="1">
+                                </div>
+                            </div>
+
+                            <div class="settings-card">
+                                <h3>다운로드 설정</h3>
+                                <div class="setting-item">
+                                    <label for="downloadCost">다운로드 비용 (크레딧)</label>
+                                    <input type="number" id="downloadCost" value="1" min="0">
+                                </div>
+                                <div class="setting-item">
+                                    <label for="downloadLimit">다운로드 제한 (일일)</label>
+                                    <input type="number" id="downloadLimit" value="50" min="1">
+                                </div>
+                            </div>
+
+                            <div class="settings-card">
+                                <h3>사용자 설정</h3>
+                                <div class="setting-item">
+                                    <label for="signupBonus">신규 가입 보너스</label>
+                                    <input type="number" id="signupBonus" value="5" min="0">
+                                </div>
+                                <div class="setting-item">
+                                    <label for="dailyBonus">일일 로그인 보너스</label>
+                                    <input type="number" id="dailyBonus" value="1" min="0">
+                                </div>
+                            </div>
+
+                            <div class="settings-card">
+                                <h3>보안 설정</h3>
+                                <div class="setting-item">
+                                    <label for="sessionTimeout">세션 타임아웃 (분)</label>
+                                    <input type="number" id="sessionTimeout" value="60" min="5">
+                                </div>
+                                <div class="setting-item">
+                                    <label for="maxLoginAttempts">최대 로그인 시도</label>
+                                    <input type="number" id="maxLoginAttempts" value="5" min="1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-actions">
+                            <button class="btn primary" onclick="saveSystemSettings()">설정 저장</button>
+                            <button class="btn secondary" onclick="resetSystemSettings()">기본값 복원</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 로그 관리 섹션 -->
+                <section class="admin-section" id="logsSection" style="display: none;">
+                    <div class="admin-header">
+                        <h1><i class="fas fa-file-alt"></i> 로그 관리</h1>
+                        <p>시스템 로그를 조회하고 관리하세요</p>
+                    </div>
+
+                    <div class="admin-content">
+                        <div class="log-controls">
+                            <div class="log-filters">
+                                <select id="logType">
+                                    <option value="all">전체</option>
+                                    <option value="search">검색</option>
+                                    <option value="download">다운로드</option>
+                                    <option value="credit">크레딧</option>
+                                    <option value="auth">인증</option>
+                                    <option value="error">오류</option>
+                                </select>
+                                <select id="logLevel">
+                                    <option value="all">모든 레벨</option>
+                                    <option value="info">정보</option>
+                                    <option value="warning">경고</option>
+                                    <option value="error">오류</option>
+                                </select>
+                                <input type="date" id="logDate">
+                                <button class="btn primary" onclick="loadLogs()">로그 조회</button>
+                                <button class="btn danger" onclick="clearLogs()">로그 삭제</button>
+                            </div>
+                        </div>
+
+                        <div class="logs-container" id="logsContainer">
+                            <!-- 로그가 여기에 표시됩니다 -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 분석 섹션 -->
+                <section class="admin-section" id="analyticsSection" style="display: none;">
+                    <div class="admin-header">
+                        <h1><i class="fas fa-chart-bar"></i> 분석</h1>
+                        <p>상세한 사용 통계와 분석 데이터를 확인하세요</p>
+                    </div>
+
+                    <div class="admin-content">
+                        <div class="analytics-placeholder">
+                            <i class="fas fa-chart-line"></i>
+                            <h3>분석 기능 준비 중</h3>
+                            <p>상세한 분석 기능이 곧 추가될 예정입니다.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 알림 관리 섹션 -->
+                <section class="admin-section" id="notificationsSection" style="display: none;">
+                    <div class="admin-header">
+                        <h1><i class="fas fa-bell"></i> 알림 관리</h1>
+                        <p>시스템 알림과 사용자 알림을 관리하세요</p>
+                    </div>
+
+                    <div class="admin-content">
+                        <div class="notifications-placeholder">
+                            <i class="fas fa-bell"></i>
+                            <h3>알림 관리 기능 준비 중</h3>
+                            <p>알림 관리 기능이 곧 추가될 예정입니다.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- 토스트 알림 -->
+    <div class="toast" id="toast">
+        <div class="toast-content">
+            <span class="toast-message" id="toastMessage"></span>
+        </div>
+    </div>
+
+    <script src="supabase-config.js"></script>
+    <script src="admin-script.js"></script>
+</body>
+</html>

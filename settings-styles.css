@@ -1,0 +1,539 @@
+/* 설정 페이지 스타일 */
+
+/* 설정 모달 기본 스타일 */
+.settings-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.settings-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settings-modal-content {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f8fafc;
+}
+
+.settings-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.settings-header i {
+    color: #ff6b6b;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.settings-body {
+    padding: 0;
+    max-height: calc(90vh - 120px);
+    overflow-y: auto;
+}
+
+.settings-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #e5e7eb;
+    background: #f8fafc;
+}
+
+/* 설정 페이지 헤더 */
+.settings-page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem 0;
+}
+
+.settings-page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.settings-page-header h1 i {
+    color: #ff6b6b;
+}
+
+.settings-page-header p {
+    color: #6b7280;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* 설정 페이지 탭 */
+.settings-page-tabs {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+/* 설정 탭 */
+.settings-tabs,
+.settings-page-tabs {
+    display: flex;
+    height: 100%;
+}
+
+.settings-tab-buttons {
+    display: flex;
+    flex-direction: column;
+    background: #f8fafc;
+    border-right: 1px solid #e5e7eb;
+    min-width: 200px;
+    padding: 1rem 0;
+}
+
+.settings-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #6b7280;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.settings-tab-btn:hover {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff6b6b;
+}
+
+.settings-tab-btn.active {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+    position: relative;
+}
+
+.settings-tab-btn.active::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: white;
+    border-radius: 2px 0 0 2px;
+}
+
+.settings-tab-btn i {
+    font-size: 1.1rem;
+}
+
+/* 설정 탭 콘텐츠 */
+.settings-tab-content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.settings-section {
+    margin-bottom: 2.5rem;
+}
+
+.settings-section:last-child {
+    margin-bottom: 0;
+}
+
+.settings-section h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.setting-item {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.setting-item:last-child {
+    margin-bottom: 0;
+}
+
+.setting-item label {
+    display: block;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.setting-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease;
+    background: white;
+}
+
+.setting-input:focus {
+    outline: none;
+    border-color: #ff6b6b;
+    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+}
+
+.setting-input:read-only {
+    background: #f9fafb;
+    color: #6b7280;
+}
+
+.setting-help {
+    display: block;
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+
+/* 경로 입력 그룹 */
+.path-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.path-input-group .setting-input {
+    flex: 1;
+}
+
+.browse-btn {
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.2s ease;
+    white-space: nowrap;
+}
+
+.browse-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* 비밀번호 입력 그룹 */
+.password-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-group .setting-input {
+    padding-right: 3rem;
+}
+
+.toggle-password-btn {
+    position: absolute;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: color 0.2s ease;
+}
+
+.toggle-password-btn:hover {
+    color: #ff6b6b;
+}
+
+/* 체크박스 스타일 */
+.setting-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: #374151;
+}
+
+.setting-checkbox input[type="checkbox"] {
+    display: none;
+}
+
+.setting-checkbox .checkmark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    position: relative;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.setting-checkbox input[type="checkbox"]:checked + .checkmark {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    border-color: #ff6b6b;
+}
+
+.setting-checkbox input[type="checkbox"]:checked + .checkmark::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 6px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* API 테스트 버튼 */
+.test-api-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.test-api-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* 설정 푸터 */
+.settings-footer,
+.settings-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #e5e7eb;
+    background: #f8fafc;
+    border-radius: 0 0 16px 16px;
+    gap: 1rem;
+}
+
+.settings-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.settings-btn.primary {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+}
+
+.settings-btn.secondary {
+    background: #e5e7eb;
+    color: #6b7280;
+}
+
+.settings-btn:hover {
+    transform: translateY(-1px);
+}
+
+.settings-btn.primary:hover {
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.settings-btn.secondary:hover {
+    background: #d1d5db;
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px) {
+    .settings-modal-content {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .settings-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .settings-header h2 {
+        font-size: 1.25rem;
+    }
+    
+    .settings-tabs {
+        flex-direction: column;
+    }
+    
+    .settings-tab-buttons {
+        flex-direction: row;
+        min-width: auto;
+        padding: 0.5rem;
+        overflow-x: auto;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .settings-tab-btn {
+        white-space: nowrap;
+        padding: 0.75rem 1rem;
+        min-width: auto;
+    }
+    
+    .settings-tab-btn.active::after {
+        display: none;
+    }
+    
+    .settings-tab-content {
+        padding: 1.5rem;
+    }
+    
+    .settings-footer {
+        padding: 1rem 1.5rem;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .settings-footer .settings-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .path-input-group {
+        flex-direction: column;
+    }
+    
+    .browse-btn {
+        justify-content: center;
+    }
+}
+
+/* 스크롤바 스타일 */
+.settings-body::-webkit-scrollbar,
+.settings-tab-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.settings-body::-webkit-scrollbar-track,
+.settings-tab-content::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.settings-body::-webkit-scrollbar-thumb,
+.settings-tab-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.settings-body::-webkit-scrollbar-thumb:hover,
+.settings-tab-content::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* 애니메이션 */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.settings-modal.show .settings-modal-content {
+    animation: slideInUp 0.3s ease;
+}
+
+/* 포커스 스타일 개선 */
+.settings-tab-btn:focus,
+.setting-input:focus,
+.browse-btn:focus,
+.test-api-btn:focus,
+.settings-btn:focus,
+.toggle-password-btn:focus {
+    outline: 2px solid #ff6b6b;
+    outline-offset: 2px;
+}
+
+/* 비활성화 상태 */
+.setting-input:disabled,
+.settings-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.settings-btn:disabled:hover {
+    transform: none;
+}
