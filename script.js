@@ -1,5 +1,5 @@
-// Claude API 설정 (환경변수에서 로드)
-const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY || '';
+// Claude API 설정
+const CLAUDE_API_KEY = ''; // 프록시 서버에서 처리
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 
 // RapidAPI TikTok API 설정
@@ -5671,6 +5671,32 @@ function dataURLtoBlob(dataURL) {
     
     return new Blob([u8arr], { type: mime });
 }
+
+// 전역 함수들을 window 객체에 할당 (HTML onclick 이벤트에서 접근 가능하도록)
+window.toggleSidebar = toggleSidebar;
+window.closeSidebar = closeSidebar;
+window.showSearch = showSearch;
+window.showFavorites = showFavorites;
+window.openSettingsModal = openSettingsModal;
+window.openChargeModal = openChargeModal;
+window.closeAuthModal = closeAuthModal;
+window.closeSettingsModal = closeSettingsModal;
+window.switchToSignup = switchToSignup;
+window.switchToLogin = switchToLogin;
+window.togglePassword = togglePassword;
+window.handleLogin = handleLogin;
+window.handleSignup = handleSignup;
+window.loginWithGoogle = loginWithGoogle;
+window.loginWithKakao = loginWithKakao;
+window.signupWithGoogle = signupWithGoogle;
+window.signupWithKakao = signupWithKakao;
+window.showSettingsTab = showSettingsTab;
+window.resetSettings = resetSettings;
+window.saveSettings = saveSettings;
+window.selectDownloadPath = selectDownloadPath;
+window.testCoupangAPI = testCoupangAPI;
+window.togglePasswordVisibility = togglePasswordVisibility;
+window.chargeCredits = chargeCredits;
 
 // 앱 초기화 완료 로그
 console.log('🎉 쇼핑파인더가 준비되었습니다!');
