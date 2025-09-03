@@ -2528,15 +2528,18 @@ function processBankTransfer() {
     const { credits, price } = selectedCreditPackage;
     
     const confirmPayment = confirm(
-        `계좌 이체로 ${credits.toLocaleString()} 크레딧을 충전하시겠습니까?\n\n` +
+        `계좌 이체로 ${credits.toLocaleString()} 크레딧을 충전 신청하시겠습니까?\n\n` +
         `결제 금액: ${price.toLocaleString()}원\n` +
         `입금 계좌: 국민은행 123456-78-901234 (주)쇼핑파인더\n\n` +
-        `입금 확인 후 크레딧이 충전됩니다.\n` +
+        `관리자 승인 후 크레딧이 충전됩니다.\n` +
         `입금자명에 회원가입 시 사용한 이메일을 포함해주세요.`
     );
     
     if (confirmPayment) {
-        // 결제 대기 상태로 처리
+        // 충전 신청 저장
+        submitCreditRequest(credits, price);
+        
+        // 계좌이체 안내 모달 표시
         showBankTransferInstructions(credits, price);
         
         // 모달 닫기
@@ -2604,21 +2607,17 @@ function showBankTransferInstructions(credits, price) {
                 
                 <div class="transfer-status">
                     <div class="status-message">
-                        <i class="fas fa-clock"></i>
-                        <span>입금 확인 대기 중입니다</span>
+                        <i class="fas fa-check-circle"></i>
+                        <span>충전 신청이 완료되었습니다</span>
                     </div>
-                    <p>입금이 확인되면 자동으로 크레딧이 충전됩니다.</p>
+                    <p>입금 후 관리자 승인을 통해 크레딧이 충전됩니다.</p>
                 </div>
             </div>
             
             <div class="bank-transfer-footer">
-                <button class="btn secondary" onclick="this.closest('.bank-transfer-modal').remove()">
-                    <i class="fas fa-times"></i>
-                    닫기
-                </button>
-                <button class="btn primary" onclick="checkPaymentStatus()">
-                    <i class="fas fa-refresh"></i>
-                    입금 확인
+                <button class="btn primary full-width" onclick="this.closest('.bank-transfer-modal').remove()">
+                    <i class="fas fa-check"></i>
+                    확인
                 </button>
             </div>
         </div>
@@ -2659,36 +2658,54 @@ function addPendingPayment(credits, price) {
     showToast(`${credits.toLocaleString()} 크레딧 충전 요청이 접수되었습니다`, 'info');
 }
 
-function checkPaymentStatus() {
-    // 실제로는 서버에서 결제 상태를 확인해야 함
-    // 데모용으로 랜덤하게 결제 완료 처리
-    const isPaymentConfirmed = Math.random() > 0.7; // 30% 확률로 결제 완료
-    
-    if (isPaymentConfirmed) {
-        const pendingPayments = JSON.parse(localStorage.getItem('pendingPayments')) || [];
-        const latestPayment = pendingPayments[pendingPayments.length - 1];
-        
-        if (latestPayment && latestPayment.status === 'pending') {
-            // 결제 완료 처리
-            latestPayment.status = 'completed';
-            localStorage.setItem('pendingPayments', JSON.stringify(pendingPayments));
-            
-            // 크레딧 충전
-            addCredits(latestPayment.credits);
-            
-            showToast(`입금이 확인되었습니다! ${latestPayment.credits.toLocaleString()} 크레딧이 충전되었습니다! 💰`, 'success');
-            
-            // 모달 닫기
-            const modal = document.querySelector('.bank-transfer-modal');
-            if (modal) {
-                modal.remove();
-            }
-        } else {
-            showToast('입금이 아직 확인되지 않았습니다', 'info');
-        }
-    } else {
-        showToast('입금이 아직 확인되지 않았습니다. 잠시 후 다시 확인해주세요.', 'info');
+// 충전 신청 저장 함수
+function submitCreditRequest(credits, price) {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+        showToast('로그인이 필요합니다', 'error');
+        return;
     }
+    
+    const request = {
+        id: Date.now().toString(),
+        userId: currentUser.id,
+        userEmail: currentUser.email,
+        credits: credits,
+        price: price,
+        status: 'pending', // pending, approved, rejected
+        requestDate: new Date().toISOString(),
+        approvedBy: null,
+        approvedDate: null
+    };
+    
+    // 로컬 스토리지에 저장 (실제로는 서버 API 호출)
+    const creditRequests = JSON.parse(localStorage.getItem('creditRequests') || '[]');
+    creditRequests.push(request);
+    localStorage.setItem('creditRequests', JSON.stringify(creditRequests));
+    
+    console.log('충전 신청 저장됨:', request);
+}
+
+// 현재 사용자 정보 가져오기
+function getCurrentUser() {
+    // 실제로는 Supabase에서 가져와야 함
+    const userEmail = localStorage.getItem('userEmail');
+    if (userEmail) {
+        return {
+            id: userEmail, // 임시로 이메일을 ID로 사용
+            email: userEmail
+        };
+    }
+    return null;
+}
+
+// 사용자의 충전 신청 내역 조회
+function getUserCreditRequests() {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return [];
+    
+    const allRequests = JSON.parse(localStorage.getItem('creditRequests') || '[]');
+    return allRequests.filter(request => request.userEmail === currentUser.email);
 }
 
 // 기존 chargeCredits 함수는 관리자용으로 변경
@@ -6066,7 +6083,9 @@ window.processCardPayment = processCardPayment;
 window.processBankTransfer = processBankTransfer;
 window.chargeCreditsForUser = chargeCreditsForUser;
 window.copyToClipboard = copyToClipboard;
-window.checkPaymentStatus = checkPaymentStatus;
+window.submitCreditRequest = submitCreditRequest;
+window.getCurrentUser = getCurrentUser;
+window.getUserCreditRequests = getUserCreditRequests;
 window.openForgotPasswordModal = openForgotPasswordModal;
 window.handleForgotPassword = handleForgotPassword;
 

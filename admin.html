@@ -294,6 +294,25 @@
                             <button class="btn primary" onclick="manageCreditForUser()">실행</button>
                         </div>
                         
+                        <div class="credit-requests">
+                            <h3>충전 신청 승인</h3>
+                            <div class="requests-filters">
+                                <select id="requestStatus">
+                                    <option value="pending">대기 중</option>
+                                    <option value="approved">승인됨</option>
+                                    <option value="rejected">거부됨</option>
+                                    <option value="all">전체</option>
+                                </select>
+                                <button class="btn secondary" onclick="loadCreditRequests()">
+                                    <i class="fas fa-refresh"></i>
+                                    새로고침
+                                </button>
+                            </div>
+                            <div class="requests-list" id="creditRequestsList">
+                                <!-- 충전 신청 내역이 여기에 표시됩니다 -->
+                            </div>
+                        </div>
+                        
                         <div class="credit-transactions">
                             <h3>크레딧 거래 내역</h3>
                             <div class="transactions-filters">

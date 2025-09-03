@@ -4523,3 +4523,180 @@ body {
         width: 100%;
     }
 }
+
+/* 충전 신청 관리 스타일 */
+.credit-requests {
+    margin-bottom: 30px;
+}
+
+.requests-filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.requests-filters select {
+    padding: 8px 12px;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.requests-list {
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-lg);
+    background: var(--bg-primary);
+}
+
+.request-item {
+    padding: 20px;
+    border-bottom: 1px solid var(--gray-200);
+    transition: background-color var(--transition-fast);
+}
+
+.request-item:last-child {
+    border-bottom: none;
+}
+
+.request-item:hover {
+    background: var(--bg-secondary);
+}
+
+.request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.request-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.request-info strong {
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.request-amount {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.request-amount .credits {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.request-amount .price {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.request-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.detail-item {
+    display: flex;
+    gap: 8px;
+}
+
+.detail-item .label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 60px;
+}
+
+.detail-item .value {
+    color: var(--text-primary);
+}
+
+.request-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* 상태 배지 */
+.status-badge {
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.pending {
+    background: linear-gradient(135deg, var(--warning-color), #ff8c00);
+    color: white;
+}
+
+.status-badge.approved {
+    background: linear-gradient(135deg, var(--success-color), #28a745);
+    color: white;
+}
+
+.status-badge.rejected {
+    background: linear-gradient(135deg, var(--error-color), #dc3545);
+    color: white;
+}
+
+/* 빈 상태 */
+.requests-list .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+
+.requests-list .empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.requests-list .empty-state p {
+    font-size: 16px;
+    margin: 0;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .requests-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .request-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .request-amount {
+        align-items: flex-start;
+    }
+    
+    .request-details {
+        grid-template-columns: 1fr;
+    }
+    
+    .request-actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+}

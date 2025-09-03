@@ -654,3 +654,212 @@ document.addEventListener('click', function(e) {
         closeSidebar();
     }
 });
+
+// ==================== 충전 신청 관리 기능 ====================
+
+// 충전 신청 목록 로드
+function loadCreditRequests() {
+    const status = document.getElementById('requestStatus').value;
+    const requestsList = document.getElementById('creditRequestsList');
+    
+    if (!requestsList) {
+        console.error('creditRequestsList 요소를 찾을 수 없습니다');
+        return;
+    }
+    
+    // 로컬 스토리지에서 충전 신청 내역 가져오기
+    const allRequests = JSON.parse(localStorage.getItem('creditRequests') || '[]');
+    
+    // 상태별 필터링
+    let filteredRequests = allRequests;
+    if (status !== 'all') {
+        filteredRequests = allRequests.filter(request => request.status === status);
+    }
+    
+    // 최신순으로 정렬
+    filteredRequests.sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
+    
+    if (filteredRequests.length === 0) {
+        requestsList.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>충전 신청 내역이 없습니다</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // 충전 신청 목록 렌더링
+    requestsList.innerHTML = filteredRequests.map(request => {
+        const requestDate = new Date(request.requestDate).toLocaleString('ko-KR');
+        const approvedDate = request.approvedDate ? new Date(request.approvedDate).toLocaleString('ko-KR') : '-';
+        
+        let statusBadge = '';
+        let actionButtons = '';
+        
+        switch (request.status) {
+            case 'pending':
+                statusBadge = '<span class="status-badge pending">대기 중</span>';
+                actionButtons = `
+                    <button class="btn small success" onclick="approveCreditRequest('${request.id}')">
+                        <i class="fas fa-check"></i> 승인
+                    </button>
+                    <button class="btn small danger" onclick="rejectCreditRequest('${request.id}')">
+                        <i class="fas fa-times"></i> 거부
+                    </button>
+                `;
+                break;
+            case 'approved':
+                statusBadge = '<span class="status-badge approved">승인됨</span>';
+                break;
+            case 'rejected':
+                statusBadge = '<span class="status-badge rejected">거부됨</span>';
+                break;
+        }
+        
+        return `
+            <div class="request-item">
+                <div class="request-header">
+                    <div class="request-info">
+                        <strong>${request.userEmail}</strong>
+                        ${statusBadge}
+                    </div>
+                    <div class="request-amount">
+                        <span class="credits">${request.credits.toLocaleString()} 크레딧</span>
+                        <span class="price">${request.price.toLocaleString()}원</span>
+                    </div>
+                </div>
+                <div class="request-details">
+                    <div class="detail-item">
+                        <span class="label">신청일:</span>
+                        <span class="value">${requestDate}</span>
+                    </div>
+                    ${request.approvedBy ? `
+                        <div class="detail-item">
+                            <span class="label">처리자:</span>
+                            <span class="value">${request.approvedBy}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">처리일:</span>
+                            <span class="value">${approvedDate}</span>
+                        </div>
+                    ` : ''}
+                </div>
+                ${actionButtons ? `<div class="request-actions">${actionButtons}</div>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+// 충전 신청 승인
+function approveCreditRequest(requestId) {
+    if (!confirm('이 충전 신청을 승인하시겠습니까?')) {
+        return;
+    }
+    
+    const allRequests = JSON.parse(localStorage.getItem('creditRequests') || '[]');
+    const requestIndex = allRequests.findIndex(req => req.id === requestId);
+    
+    if (requestIndex === -1) {
+        alert('충전 신청을 찾을 수 없습니다');
+        return;
+    }
+    
+    const request = allRequests[requestIndex];
+    
+    if (request.status !== 'pending') {
+        alert('이미 처리된 신청입니다');
+        return;
+    }
+    
+    // 신청 상태 업데이트
+    request.status = 'approved';
+    request.approvedBy = currentUser?.email || 'admin';
+    request.approvedDate = new Date().toISOString();
+    
+    // 로컬 스토리지 업데이트
+    allRequests[requestIndex] = request;
+    localStorage.setItem('creditRequests', JSON.stringify(allRequests));
+    
+    // 사용자에게 크레딧 지급 (실제로는 서버에서 처리해야 함)
+    addCreditsToUser(request.userEmail, request.credits);
+    
+    alert(`${request.userEmail}에게 ${request.credits} 크레딧이 지급되었습니다`);
+    
+    // 목록 새로고침
+    loadCreditRequests();
+}
+
+// 충전 신청 거부
+function rejectCreditRequest(requestId) {
+    const reason = prompt('거부 사유를 입력해주세요:');
+    if (!reason) return;
+    
+    const allRequests = JSON.parse(localStorage.getItem('creditRequests') || '[]');
+    const requestIndex = allRequests.findIndex(req => req.id === requestId);
+    
+    if (requestIndex === -1) {
+        alert('충전 신청을 찾을 수 없습니다');
+        return;
+    }
+    
+    const request = allRequests[requestIndex];
+    
+    if (request.status !== 'pending') {
+        alert('이미 처리된 신청입니다');
+        return;
+    }
+    
+    // 신청 상태 업데이트
+    request.status = 'rejected';
+    request.approvedBy = currentUser?.email || 'admin';
+    request.approvedDate = new Date().toISOString();
+    request.rejectReason = reason;
+    
+    // 로컬 스토리지 업데이트
+    allRequests[requestIndex] = request;
+    localStorage.setItem('creditRequests', JSON.stringify(allRequests));
+    
+    alert(`충전 신청이 거부되었습니다`);
+    
+    // 목록 새로고침
+    loadCreditRequests();
+}
+
+// 사용자에게 크레딧 지급 (관리자용)
+function addCreditsToUser(userEmail, credits) {
+    // 실제로는 서버 API를 통해 처리해야 함
+    // 여기서는 데모용으로 로컬 스토리지 처리
+    
+    // 현재 로그인된 사용자가 해당 이메일과 같다면 즉시 반영
+    const currentUserEmail = localStorage.getItem('userEmail');
+    if (currentUserEmail === userEmail) {
+        const currentCredits = parseInt(localStorage.getItem('userCredits')) || 0;
+        const newCredits = currentCredits + credits;
+        localStorage.setItem('userCredits', newCredits.toString());
+        
+        // 메인 페이지가 열려있다면 크레딧 표시 업데이트
+        if (window.opener && !window.opener.closed) {
+            try {
+                window.opener.postMessage({
+                    type: 'creditUpdate',
+                    credits: newCredits
+                }, '*');
+            } catch (e) {
+                console.log('메인 페이지 크레딧 업데이트 실패:', e);
+            }
+        }
+    }
+    
+    console.log(`${userEmail}에게 ${credits} 크레딧 지급 완료`);
+}
+
+// 페이지 로드 시 충전 신청 목록 로드
+document.addEventListener('DOMContentLoaded', function() {
+    // 기존 초기화 코드 실행 후
+    setTimeout(() => {
+        if (document.getElementById('creditRequestsList')) {
+            loadCreditRequests();
+        }
+    }, 1000);
+});
