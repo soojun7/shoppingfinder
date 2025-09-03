@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>관리자 패널 - 쇼핑파인더</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png?v=1">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon.png?v=1">
+    <link rel="shortcut icon" href="favicon.png?v=1">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="admin-styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -19,80 +21,102 @@
         <div class="sidebar-overlay" onclick="closeSidebar()"></div>
         
         <!-- 관리자 전용 사이드바 -->
-        <aside class="sidebar admin-sidebar">
+        <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>관리자 패널</span>
+                    <i class="fab fa-tiktok"></i>
+                    <span>Shopping Finder</span>
                 </div>
-                <a href="index.html" class="back-to-main-btn">
-                    <i class="fas fa-arrow-left"></i>
-                    <span>메인으로</span>
-                </a>
             </div>
             
             <nav class="sidebar-nav">
                 <ul>
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link">
+                            <i class="fas fa-search"></i>
+                            <span>검색</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="settings.html" class="nav-link">
+                            <i class="fas fa-cog"></i>
+                            <span>설정</span>
+                        </a>
+                    </li>
                     <li class="nav-item active">
+                        <a href="admin.html" class="nav-link">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>관리자</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="admin-nav-divider"></div>
+                
+                <ul class="admin-nav-list">
+                    <li class="nav-item admin-nav-item active">
                         <a href="#" class="nav-link" onclick="showAdminTab('dashboard', event)">
                             <i class="fas fa-tachometer-alt"></i>
                             <span>대시보드</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item admin-nav-item">
                         <a href="#" class="nav-link" onclick="showAdminTab('users', event)">
                             <i class="fas fa-users"></i>
                             <span>사용자 관리</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item admin-nav-item">
                         <a href="#" class="nav-link" onclick="showAdminTab('credits', event)">
                             <i class="fas fa-coins"></i>
                             <span>크레딧 관리</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item admin-nav-item">
                         <a href="#" class="nav-link" onclick="showAdminTab('system', event)">
                             <i class="fas fa-cog"></i>
                             <span>시스템 설정</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item admin-nav-item">
                         <a href="#" class="nav-link" onclick="showAdminTab('logs', event)">
                             <i class="fas fa-file-alt"></i>
                             <span>로그 관리</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item admin-nav-item">
                         <a href="#" class="nav-link" onclick="showAdminTab('analytics', event)">
                             <i class="fas fa-chart-bar"></i>
                             <span>분석</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link" onclick="showAdminTab('notifications', event)">
-                            <i class="fas fa-bell"></i>
-                            <span>알림 관리</span>
                         </a>
                     </li>
                 </ul>
             </nav>
             
             <div class="sidebar-footer">
-                <div class="admin-info">
-                    <div class="admin-avatar">
-                        <i class="fas fa-user-shield"></i>
+                <div class="credit-section">
+                    <div class="credit-info">
+                        <div class="credit-header">
+                            <i class="fas fa-coins"></i>
+                            <span class="credit-label">크레딧</span>
+                        </div>
+                        <div class="credit-amount" id="creditAmount">0</div>
                     </div>
-                    <div class="admin-details">
-                        <span class="admin-name" id="adminName">관리자</span>
-                        <span class="admin-role">시스템 관리자</span>
-                    </div>
+                    <button class="charge-btn" onclick="openChargeModal()">
+                        <i class="fas fa-plus"></i>
+                        충전
+                    </button>
                 </div>
                 
-                <button class="logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i>
-                    로그아웃
-                </button>
+                <div class="user-profile">
+                    <div class="avatar">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="user-info">
+                        <span class="username" id="adminName">관리자</span>
+                        <span class="status">온라인</span>
+                    </div>
+                </div>
             </div>
         </aside>
 
@@ -104,19 +128,16 @@
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="mobile-logo">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>관리자 패널</span>
+                    <i class="fab fa-tiktok"></i>
+                    <span>Shopping Finder</span>
                 </div>
-                <a href="index.html" class="mobile-back-btn">
-                    <i class="fas fa-arrow-left"></i>
-                </a>
             </div>
             
             <div class="content-wrapper">
                 <!-- 대시보드 섹션 -->
                 <section class="admin-section" id="dashboardSection">
-                    <div class="admin-header">
-                        <h1><i class="fas fa-tachometer-alt"></i> 대시보드</h1>
+                    <div class="settings-page-header">
+                        <h1><i class="fas fa-tachometer-alt"></i> 관리자 대시보드</h1>
                         <p>시스템 현황을 한눈에 확인하세요</p>
                     </div>
 
