@@ -505,25 +505,42 @@ function deleteUser(userId) {
 
 // 크레딧 관리
 function manageCreditForUser(email, amount, reason) {
-    const userEmail = email || document.getElementById('creditUserEmail').value;
-    const creditAmount = amount || parseInt(document.getElementById('creditAmount').value);
-    const action = document.getElementById('creditAction')?.value || 'add';
-    const creditReason = reason || document.getElementById('creditReason').value || '관리자 조정';
+    const userEmail = email || document.getElementById('adminCreditUserEmail').value;
+    const creditAmount = amount || parseInt(document.getElementById('adminCreditAmount').value);
+    const action = document.getElementById('adminCreditAction')?.value || 'add';
+    const creditReason = reason || document.getElementById('adminCreditReason').value || '관리자 조정';
     
-    if (!userEmail || !creditAmount) {
-        showToast('이메일과 크레딧 수량을 입력해주세요', 'error');
+    if (!userEmail || !creditAmount || creditAmount <= 0) {
+        showToast('이메일과 유효한 크레딧 수량을 입력해주세요', 'error');
         return;
     }
     
-    // 실제로는 서버에서 처리
+    if (!isAdmin) {
+        showToast('관리자 권한이 필요합니다', 'error');
+        return;
+    }
+    
     const actionText = action === 'add' ? '지급' : '차감';
-    showToast(`${userEmail}에게 ${creditAmount} 크레딧을 ${actionText}했습니다`, 'success');
+    const priceValue = creditAmount * 100; // 1크레딧 = 100원
+    
+    const confirmAction = confirm(
+        `${userEmail}에게 ${creditAmount} 크레딧을 ${actionText}하시겠습니까?\n\n` +
+        `크레딧 가치: ${priceValue.toLocaleString()}원\n` +
+        `사유: ${creditReason}`
+    );
+    
+    if (!confirmAction) {
+        return;
+    }
+    
+    // 실제로는 서버에서 처리해야 함
+    showToast(`${userEmail}에게 ${creditAmount} 크레딧을 ${actionText}했습니다 (${priceValue.toLocaleString()}원 상당)`, 'success');
     
     // 폼 초기화
     if (!email) {
-        document.getElementById('creditUserEmail').value = '';
-        document.getElementById('creditAmount').value = '';
-        document.getElementById('creditReason').value = '';
+        document.getElementById('adminCreditUserEmail').value = '';
+        document.getElementById('adminCreditAmount').value = '';
+        document.getElementById('adminCreditReason').value = '';
     }
     
     // 거래 내역 새로고침

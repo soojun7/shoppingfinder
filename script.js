@@ -2389,30 +2389,62 @@ function createChargeModal() {
                 </div>
                 
                 <div class="charge-options">
-                    <div class="charge-option" onclick="chargeCredits(500)">
-                        <div class="charge-amount">500 크레딧</div>
-                        <div class="charge-price">₩5,000</div>
+                    <div class="charge-option" onclick="selectCreditPackage(100, 10000)">
+                        <div class="charge-amount">100 크레딧</div>
+                        <div class="charge-price">₩10,000</div>
                         <div class="charge-bonus">기본 패키지</div>
                     </div>
                     
-                    <div class="charge-option popular" onclick="chargeCredits(1200)">
+                    <div class="charge-option popular" onclick="selectCreditPackage(250, 25000)">
                         <div class="charge-badge">인기</div>
-                        <div class="charge-amount">1,200 크레딧</div>
-                        <div class="charge-price">₩10,000</div>
+                        <div class="charge-amount">250 크레딧</div>
+                        <div class="charge-price">₩25,000</div>
+                        <div class="charge-bonus">+50 보너스</div>
+                    </div>
+                    
+                    <div class="charge-option" onclick="selectCreditPackage(500, 50000)">
+                        <div class="charge-amount">500 크레딧</div>
+                        <div class="charge-price">₩50,000</div>
+                        <div class="charge-bonus">+100 보너스</div>
+                    </div>
+                    
+                    <div class="charge-option premium" onclick="selectCreditPackage(1000, 100000)">
+                        <div class="charge-badge">프리미엄</div>
+                        <div class="charge-amount">1,000 크레딧</div>
+                        <div class="charge-price">₩100,000</div>
                         <div class="charge-bonus">+200 보너스</div>
                     </div>
-                    
-                    <div class="charge-option" onclick="chargeCredits(2500)">
-                        <div class="charge-amount">2,500 크레딧</div>
-                        <div class="charge-price">₩20,000</div>
-                        <div class="charge-bonus">+500 보너스</div>
+                </div>
+                
+                <div class="payment-methods" id="paymentMethods" style="display: none;">
+                    <h3>결제 방법 선택</h3>
+                    <div class="selected-package" id="selectedPackage">
+                        <!-- 선택된 패키지 정보가 여기에 표시됩니다 -->
                     </div>
                     
-                    <div class="charge-option premium" onclick="chargeCredits(5500)">
-                        <div class="charge-badge">프리미엄</div>
-                        <div class="charge-amount">5,500 크레딧</div>
-                        <div class="charge-price">₩40,000</div>
-                        <div class="charge-bonus">+1,500 보너스</div>
+                    <div class="payment-buttons">
+                        <button class="payment-btn card-payment disabled" onclick="processCardPayment()">
+                            <i class="fas fa-credit-card"></i>
+                            <div class="payment-info">
+                                <span class="payment-title">카드 결제</span>
+                                <span class="payment-status">기능 준비중</span>
+                            </div>
+                        </button>
+                        
+                        <button class="payment-btn bank-transfer" onclick="processBankTransfer()">
+                            <i class="fas fa-university"></i>
+                            <div class="payment-info">
+                                <span class="payment-title">계좌 이체</span>
+                                <span class="payment-status">즉시 충전</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <div class="payment-actions">
+                        <button class="btn secondary" onclick="goBackToPackages()">
+                            <i class="fas fa-arrow-left"></i>
+                            패키지 선택으로
+                        </button>
                     </div>
                 </div>
                 
@@ -2434,23 +2466,109 @@ function createChargeModal() {
     return modal;
 }
 
-function chargeCredits(amount) {
-    // 실제로는 결제 시스템과 연동
-    const currentCredits = typeof userCredits !== 'undefined' ? userCredits : 0;
+// 전역 변수로 선택된 패키지 정보 저장
+let selectedCreditPackage = null;
+
+function selectCreditPackage(credits, price) {
+    selectedCreditPackage = { credits, price };
+    
+    // 패키지 선택 화면 숨기기
+    const chargeOptions = document.querySelector('.charge-options');
+    if (chargeOptions) {
+        chargeOptions.style.display = 'none';
+    }
+    
+    // 결제 방법 선택 화면 보이기
+    const paymentMethods = document.getElementById('paymentMethods');
+    if (paymentMethods) {
+        paymentMethods.style.display = 'block';
+        
+        // 선택된 패키지 정보 표시
+        const selectedPackageDiv = document.getElementById('selectedPackage');
+        if (selectedPackageDiv) {
+            selectedPackageDiv.innerHTML = `
+                <div class="selected-package-info">
+                    <h4>선택된 패키지</h4>
+                    <div class="package-details">
+                        <span class="package-credits">${credits.toLocaleString()} 크레딧</span>
+                        <span class="package-price">${price.toLocaleString()}원</span>
+                    </div>
+                </div>
+            `;
+        }
+    }
+}
+
+function goBackToPackages() {
+    // 결제 방법 선택 화면 숨기기
+    const paymentMethods = document.getElementById('paymentMethods');
+    if (paymentMethods) {
+        paymentMethods.style.display = 'none';
+    }
+    
+    // 패키지 선택 화면 보이기
+    const chargeOptions = document.querySelector('.charge-options');
+    if (chargeOptions) {
+        chargeOptions.style.display = 'block';
+    }
+    
+    selectedCreditPackage = null;
+}
+
+function processCardPayment() {
+    showToast('카드 결제 기능은 준비 중입니다', 'info');
+}
+
+function processBankTransfer() {
+    if (!selectedCreditPackage) {
+        showToast('패키지를 먼저 선택해주세요', 'error');
+        return;
+    }
+    
+    const { credits, price } = selectedCreditPackage;
+    
     const confirmPayment = confirm(
-        `${amount} 크레딧을 충전하시겠습니까?\n\n` +
-        `충전 후 총 크레딧: ${(currentCredits + amount).toLocaleString()}`
+        `계좌 이체로 ${credits.toLocaleString()} 크레딧을 충전하시겠습니까?\n\n` +
+        `결제 금액: ${price.toLocaleString()}원\n` +
+        `입금 계좌: 국민은행 123456-78-901234 (주)쇼핑파인더\n\n` +
+        `입금 후 자동으로 크레딧이 충전됩니다.`
     );
     
     if (confirmPayment) {
-        addCredits(amount);
+        // 실제로는 결제 확인 후 충전되어야 하지만, 데모용으로 즉시 충전
+        addCredits(credits);
+        
+        showToast(`${credits.toLocaleString()} 크레딧이 충전되었습니다! 💰`, 'success');
         
         // 모달 닫기
         const modal = document.querySelector('.charge-modal');
         if (modal) {
             modal.remove();
         }
+        
+        selectedCreditPackage = null;
     }
+}
+
+// 기존 chargeCredits 함수는 관리자용으로 변경
+function chargeCreditsForUser(userEmail, amount, reason = '관리자 지급') {
+    // 관리자가 사용자에게 크레딧을 지급하는 함수
+    if (!isAdmin) {
+        showToast('관리자 권한이 필요합니다', 'error');
+        return false;
+    }
+    
+    // 실제로는 해당 사용자의 크레딧을 업데이트해야 함
+    // 여기서는 데모용으로 현재 사용자가 해당 이메일과 같으면 크레딧 추가
+    if (currentUser && currentUser.email === userEmail) {
+        addCredits(amount);
+        showToast(`${amount} 크레딧이 지급되었습니다 (사유: ${reason})`, 'success');
+        return true;
+    }
+    
+    // 다른 사용자에게 크레딧 지급 (실제로는 데이터베이스 업데이트)
+    showToast(`${userEmail}에게 ${amount} 크레딧을 지급했습니다`, 'success');
+    return true;
 }
 
 // 검색 속도 제한 관리
@@ -5708,7 +5826,11 @@ window.saveSettings = saveSettings;
 window.selectDownloadPath = selectDownloadPath;
 window.testCoupangAPI = testCoupangAPI;
 window.togglePasswordVisibility = togglePasswordVisibility;
-window.chargeCredits = chargeCredits;
+window.selectCreditPackage = selectCreditPackage;
+window.goBackToPackages = goBackToPackages;
+window.processCardPayment = processCardPayment;
+window.processBankTransfer = processBankTransfer;
+window.chargeCreditsForUser = chargeCreditsForUser;
 
 // 앱 초기화 완료 로그
 console.log('🎉 쇼핑파인더가 준비되었습니다!');
