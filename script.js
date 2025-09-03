@@ -2776,6 +2776,14 @@ async function checkSearchRequirements() {
 const SUPABASE_URL = 'https://vxxpltinkmgvzzgmeare.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4eHBsdGlua21ndnp6Z21lYXJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4NzY2MTQsImV4cCI6MjA3MjQ1MjYxNH0.LzxsGxKEBl7fvF6SeITj33uqiIQHe1Gc5UYSXtYg5HU';
 
+// 현재 도메인 감지 함수
+function getCurrentDomain() {
+    if (typeof window !== 'undefined') {
+        return window.location.origin;
+    }
+    return 'http://localhost:3000'; // 기본값
+}
+
 // Supabase 클라이언트 초기화 (실제 사용 시 환경변수 사용 권장)
 let supabase = null;
 try {
@@ -3300,6 +3308,7 @@ async function supabaseSignup(name, email, password) {
             email: email,
             password: password,
             options: {
+                emailRedirectTo: `${getCurrentDomain()}/`,
                 data: {
                     full_name: name,
                     display_name: name
@@ -3394,6 +3403,90 @@ async function updateUserCredits(userId, credits) {
         }
     } catch (error) {
         console.error('크레딧 업데이트 실패:', error);
+    }
+}
+
+// 비밀번호 재설정 모달 열기
+function openForgotPasswordModal(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'forgot-password-modal';
+    modal.innerHTML = `
+        <div class="forgot-password-content">
+            <div class="forgot-password-header">
+                <h2><i class="fas fa-key"></i> 비밀번호 재설정</h2>
+                <button class="modal-close-btn-floating" onclick="this.closest('.forgot-password-modal').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="forgot-password-body">
+                <p>가입하신 이메일 주소를 입력하시면 비밀번호 재설정 링크를 보내드립니다.</p>
+                
+                <form onsubmit="handleForgotPassword(event)">
+                    <div class="input-group">
+                        <label for="resetEmail">이메일 주소</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="resetEmail" required placeholder="이메일을 입력하세요">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="auth-btn primary">
+                        <i class="fas fa-paper-plane"></i>
+                        재설정 링크 보내기
+                    </button>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+}
+
+// 비밀번호 재설정 처리
+async function handleForgotPassword(event) {
+    event.preventDefault();
+    
+    const email = document.getElementById('resetEmail').value;
+    
+    if (!email) {
+        showToast('이메일을 입력해주세요', 'error');
+        return;
+    }
+    
+    if (!supabase) {
+        showToast('비밀번호 재설정 기능을 사용할 수 없습니다', 'error');
+        return;
+    }
+    
+    try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${getCurrentDomain()}/reset-password`
+        });
+        
+        if (error) {
+            throw new Error(getKoreanErrorMessage(error.message));
+        }
+        
+        showToast('비밀번호 재설정 링크를 이메일로 보내드렸습니다', 'success');
+        
+        // 모달 닫기
+        const modal = document.querySelector('.forgot-password-modal');
+        if (modal) {
+            modal.remove();
+        }
+        
+    } catch (error) {
+        console.error('비밀번호 재설정 오류:', error);
+        showToast(error.message || '비밀번호 재설정에 실패했습니다', 'error');
     }
 }
 
@@ -5974,6 +6067,8 @@ window.processBankTransfer = processBankTransfer;
 window.chargeCreditsForUser = chargeCreditsForUser;
 window.copyToClipboard = copyToClipboard;
 window.checkPaymentStatus = checkPaymentStatus;
+window.openForgotPasswordModal = openForgotPasswordModal;
+window.handleForgotPassword = handleForgotPassword;
 
 // 앱 초기화 완료 로그
 console.log('🎉 쇼핑파인더가 준비되었습니다!');
