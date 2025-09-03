@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
 });
 
-function initializeApp() {
+async function initializeApp() {
     // DOM 요소들 초기화
     searchInput = document.getElementById('searchInput');
     countrySelect = document.getElementById('countrySelect');
@@ -137,6 +137,9 @@ function initializeApp() {
     
     // 터치 제스처 지원
     initializeTouchGestures();
+    
+    // 인증 상태 초기화
+    await initializeAuth();
     
     console.log('쇼핑파인더 앱이 초기화되었습니다.');
 }
@@ -3606,6 +3609,12 @@ async function logout() {
     
     if (confirmLogout) {
         try {
+            // 기존 사용자 메뉴 제거
+            const existingMenu = document.querySelector('.user-menu');
+            if (existingMenu) {
+                existingMenu.remove();
+            }
+            
             // Supabase 로그아웃
             if (supabase) {
                 const { error } = await supabase.auth.signOut();
@@ -3620,22 +3629,35 @@ async function logout() {
             isAdmin = false;
             userCredits = 0;
             
+            // 로컬 스토리지 및 세션 스토리지 정리
             localStorage.removeItem('currentUser');
             sessionStorage.removeItem('currentUser');
             localStorage.removeItem('userCredits');
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('isAdmin');
             
+            // 사용자 프로필 이벤트 리스너 초기화
+            const userProfile = document.querySelector('.user-profile');
+            if (userProfile) {
+                // 기존 이벤트 리스너 제거를 위해 클론 후 교체
+                const newUserProfile = userProfile.cloneNode(true);
+                userProfile.parentNode.replaceChild(newUserProfile, userProfile);
+                
+                // 데이터 속성 제거
+                newUserProfile.removeAttribute('data-menu-added');
+                newUserProfile.removeAttribute('data-guest-click');
+            }
+            
+            // UI 업데이트
             updateAuthUI();
             updateCreditDisplay();
             
-            // 모든 기능 비활성화
-            disableAllInteractions();
-            
             showToast('로그아웃되었습니다');
             
-            // 즉시 강제 로그인 모달 표시
+            // 잠시 후 로그인 모달 표시
             setTimeout(() => {
                 openAuthModal(true); // force = true
-            }, 1000);
+            }, 1500);
             
         } catch (error) {
             console.error('로그아웃 처리 오류:', error);
@@ -3652,8 +3674,9 @@ function updateAuthUI() {
     const adminNavItem = document.getElementById('adminNavItem');
     
     if (isLoggedIn && currentUser) {
-        username.textContent = currentUser.name;
-        status.textContent = isAdmin ? '관리자' : '온라인';
+        // 로그인 상태 UI 업데이트
+        if (username) username.textContent = currentUser.name;
+        if (status) status.textContent = isAdmin ? '관리자' : '온라인';
         
         // 관리자 버튼 표시/숨김
         if (adminNavItem) {
@@ -3665,14 +3688,22 @@ function updateAuthUI() {
             userProfile.style.cursor = 'pointer';
             userProfile.addEventListener('click', showUserMenu);
             userProfile.setAttribute('data-menu-added', 'true');
+            userProfile.removeAttribute('data-guest-click');
         }
     } else {
-        username.textContent = '게스트';
-        status.textContent = '로그인 필요';
+        // 로그아웃 상태 UI 업데이트
+        if (username) username.textContent = '게스트';
+        if (status) status.textContent = '로그인 필요';
         
         // 관리자 버튼 숨김
         if (adminNavItem) {
             adminNavItem.style.display = 'none';
+        }
+        
+        // 기존 사용자 메뉴 제거
+        const existingMenu = document.querySelector('.user-menu');
+        if (existingMenu) {
+            existingMenu.remove();
         }
         
         // 게스트 상태에서 클릭 시 로그인 모달
@@ -3680,7 +3711,11 @@ function updateAuthUI() {
             userProfile.style.cursor = 'pointer';
             userProfile.addEventListener('click', openAuthModal);
             userProfile.setAttribute('data-guest-click', 'true');
+            userProfile.removeAttribute('data-menu-added');
         }
+        
+        // 모든 상호작용 활성화 (로그아웃 후)
+        enableAllInteractions();
     }
 }
 
@@ -6088,6 +6123,54 @@ window.getCurrentUser = getCurrentUser;
 window.getUserCreditRequests = getUserCreditRequests;
 window.openForgotPasswordModal = openForgotPasswordModal;
 window.handleForgotPassword = handleForgotPassword;
+
+// 설정 탭 전환 기능
+function showSettingsTab(tabName) {
+    // 모든 탭 버튼에서 active 클래스 제거
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // 모든 탭 패널 숨기기
+    document.querySelectorAll('.tab-pane').forEach(pane => {
+        pane.classList.remove('active');
+        pane.style.display = 'none';
+    });
+    
+    // 선택된 탭 버튼에 active 클래스 추가
+    const selectedBtn = document.querySelector(`[data-tab="${tabName}"]`);
+    if (selectedBtn) {
+        selectedBtn.classList.add('active');
+    }
+    
+    // 선택된 탭 패널 표시
+    const selectedPane = document.getElementById(`${tabName}-tab`);
+    if (selectedPane) {
+        selectedPane.style.display = 'block';
+        // 약간의 지연 후 active 클래스 추가 (애니메이션 효과)
+        setTimeout(() => {
+            selectedPane.classList.add('active');
+        }, 10);
+        
+        // 부드러운 스크롤
+        setTimeout(() => {
+            selectedPane.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    }
+    
+    // 로컬 스토리지에 현재 탭 저장
+    localStorage.setItem('activeSettingsTab', tabName);
+}
+
+// 페이지 로드 시 마지막 활성 탭 복원
+function initializeSettingsTabs() {
+    const savedTab = localStorage.getItem('activeSettingsTab') || 'general';
+    showSettingsTab(savedTab);
+}
+
+// 전역 함수로 등록
+window.showSettingsTab = showSettingsTab;
+window.initializeSettingsTabs = initializeSettingsTabs;
 
 // 앱 초기화 완료 로그
 console.log('🎉 쇼핑파인더가 준비되었습니다!');

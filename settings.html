@@ -116,26 +116,54 @@
                     </div>
                 </div>
                 
-                <!-- 설정 카드 그리드 -->
-                <div class="settings-grid">
-                    <!-- 일반 설정 카드 -->
-                    <div class="settings-card">
-                        <div class="card-header">
-                            <div class="card-icon general">
+                <!-- 설정 탭 네비게이션 -->
+                <div class="settings-tab-navigation">
+                    <div class="tab-nav">
+                        <button class="tab-btn active" data-tab="general" onclick="showSettingsTab('general')">
+                            <div class="tab-icon">
                                 <i class="fas fa-sliders-h"></i>
                             </div>
-                            <div class="card-title">
-                                <h3>일반 설정</h3>
-                                <p>언어 및 알림 설정</p>
+                            <div class="tab-text">
+                                <span class="tab-title">일반 설정</span>
+                                <span class="tab-desc">언어 및 알림</span>
                             </div>
-                        </div>
-                        
-                        <div class="card-content">
-                            <div class="setting-group">
-                                <div class="group-header">
+                        </button>
+                        <button class="tab-btn" data-tab="download" onclick="showSettingsTab('download')">
+                            <div class="tab-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="tab-text">
+                                <span class="tab-title">다운로드</span>
+                                <span class="tab-desc">저장 경로 및 품질</span>
+                            </div>
+                        </button>
+                        <button class="tab-btn" data-tab="api" onclick="showSettingsTab('api')">
+                            <div class="tab-icon">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="tab-text">
+                                <span class="tab-title">API 설정</span>
+                                <span class="tab-desc">외부 서비스 연동</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 설정 탭 콘텐츠 -->
+                <div class="tab-content-wrapper">
+                    <!-- 일반 설정 탭 -->
+                    <div class="tab-pane active" id="general-tab">
+                        <div class="settings-section">
+                            <div class="section-header">
+                                <div class="section-icon">
                                     <i class="fas fa-globe"></i>
-                                    <span>언어 설정</span>
                                 </div>
+                                <div class="section-title">
+                                    <h3>언어 설정</h3>
+                                    <p>인터페이스 언어를 선택하세요</p>
+                                </div>
+                            </div>
+                            <div class="section-content">
                                 <div class="setting-item">
                                     <label for="languageSelect">인터페이스 언어</label>
                                     <div class="select-wrapper">
@@ -148,12 +176,19 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div class="setting-group">
-                                <div class="group-header">
+                        </div>
+                        
+                        <div class="settings-section">
+                            <div class="section-header">
+                                <div class="section-icon">
                                     <i class="fas fa-bell"></i>
-                                    <span>알림 설정</span>
                                 </div>
+                                <div class="section-title">
+                                    <h3>알림 설정</h3>
+                                    <p>알림 및 소리 설정을 관리하세요</p>
+                                </div>
+                            </div>
+                            <div class="section-content">
                                 <div class="setting-item">
                                     <div class="toggle-setting">
                                         <div class="toggle-info">
@@ -182,24 +217,19 @@
                         </div>
                     </div>
                     
-                    <!-- 다운로드 설정 카드 -->
-                    <div class="settings-card">
-                        <div class="card-header">
-                            <div class="card-icon download">
-                                <i class="fas fa-download"></i>
-                            </div>
-                            <div class="card-title">
-                                <h3>다운로드 설정</h3>
-                                <p>파일 저장 및 품질 설정</p>
-                            </div>
-                        </div>
-                        
-                        <div class="card-content">
-                            <div class="setting-group">
-                                <div class="group-header">
+                    <!-- 다운로드 설정 탭 -->
+                    <div class="tab-pane" id="download-tab">
+                        <div class="settings-section">
+                            <div class="section-header">
+                                <div class="section-icon">
                                     <i class="fas fa-folder"></i>
-                                    <span>저장 경로</span>
                                 </div>
+                                <div class="section-title">
+                                    <h3>저장 경로</h3>
+                                    <p>파일이 저장될 위치를 설정하세요</p>
+                                </div>
+                            </div>
+                            <div class="section-content">
                                 <div class="setting-item">
                                     <label for="downloadPath">기본 다운로드 폴더</label>
                                     <div class="path-input-group">
@@ -215,12 +245,19 @@
                                     </small>
                                 </div>
                             </div>
-                            
-                            <div class="setting-group">
-                                <div class="group-header">
+                        </div>
+                        
+                        <div class="settings-section">
+                            <div class="section-header">
+                                <div class="section-icon">
                                     <i class="fas fa-cog"></i>
-                                    <span>다운로드 옵션</span>
                                 </div>
+                                <div class="section-title">
+                                    <h3>다운로드 옵션</h3>
+                                    <p>파일 품질 및 형식을 설정하세요</p>
+                                </div>
+                            </div>
+                            <div class="section-content">
                                 <div class="setting-item">
                                     <label for="videoQuality">비디오 품질</label>
                                     <div class="select-wrapper">
@@ -260,8 +297,11 @@
                         </div>
                     </div>
                     
-                    <!-- API 설정 카드 -->
-                    <div class="settings-card">
+                    <!-- API 설정 탭 -->
+                    <div class="tab-pane" id="api-tab">
+                        <div class="settings-grid">
+                            <!-- API 설정 카드 -->
+                            <div class="settings-card">
                         <div class="card-header">
                             <div class="card-icon api">
                                 <i class="fas fa-key"></i>
@@ -329,6 +369,7 @@
                                 </div>
                             </div>
                         </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -364,5 +405,11 @@
 
     <script src="supabase-config.js"></script>
     <script src="script.js"></script>
+    <script>
+        // 페이지 로드 시 설정 탭 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSettingsTabs();
+        });
+    </script>
 </body>
 </html>
