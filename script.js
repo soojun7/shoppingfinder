@@ -16,14 +16,8 @@ const IMGBB_API_KEY = '7c9e5b8f8c8a8b8c8d8e8f8g8h8i8j8k'; // 임시 키 (실제�
 const LANGUAGE_CONFIG = {
     ko: { name: '한국어', flag: '🇰🇷' },
     en: { name: 'English', flag: '🇺🇸' },
-    ja: { name: '日本語', flag: '🇯🇵' },
-    zh: { name: '中文', flag: '🇨🇳' },
-    es: { name: 'Español', flag: '🇪🇸' },
-    fr: { name: 'Français', flag: '🇫🇷' },
-    de: { name: 'Deutsch', flag: '🇩🇪' },
-    it: { name: 'Italiano', flag: '🇮🇹' },
-    pt: { name: 'Português', flag: '🇧🇷' },
-    ru: { name: 'Русский', flag: '🇷🇺' }
+    ja: { name: '日본語', flag: '🇯🇵' },
+    zh: { name: '中文', flag: '🇨🇳' }
 };
 
 // DOM 요소들 (DOMContentLoaded 후에 초기화됨)
