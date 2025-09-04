@@ -6916,8 +6916,24 @@ function showLinkGeneratorPage() {
 }
 
 function showSettingsPage() {
-    // 다른 모달들 닫기
-    closeLinkGeneratorModal();
+    // 간편링크생성 모달만 조용히 닫기 (라우트 변경 없이)
+    const linkModal = document.getElementById('linkGeneratorModal');
+    if (linkModal) {
+        linkModal.classList.remove('show');
+        linkModal.style.display = 'none';
+        
+        // 입력 필드 초기화
+        const coupangInput = document.getElementById('coupangOriginalLink');
+        const aliexpressInput = document.getElementById('aliexpressOriginalLink');
+        if (coupangInput) coupangInput.value = '';
+        if (aliexpressInput) aliexpressInput.value = '';
+        
+        // 결과 섹션 숨기기
+        const coupangResult = document.getElementById('coupangResult');
+        const aliexpressResult = document.getElementById('aliexpressResult');
+        if (coupangResult) coupangResult.style.display = 'none';
+        if (aliexpressResult) aliexpressResult.style.display = 'none';
+    }
     
     // 설정 모달 열기
     showSettingsModal();
@@ -7094,10 +7110,8 @@ function closeSettingsModal() {
         
         console.log('설정 모달 닫힘');
         
-        // 현재 경로가 /settings인 경우 홈으로 이동
-        if (currentRoute === '/settings') {
-            navigateToRoute('/search');
-        }
+        // 설정 모달을 닫을 때는 라우트 변경하지 않음
+        // (사용자가 직접 다른 탭을 클릭해서 이동하도록)
     }
 }
 
