@@ -2263,22 +2263,51 @@ let userCredits;
 
 // 크레딧 초기화 함수
 function initializeCredits() {
-    if (typeof userCredits === 'undefined') {
-        userCredits = parseInt(localStorage.getItem('userCredits')) || 10;
+    if (typeof userCredits === 'undefined' || userCredits === null) {
+        // localStorage에서 크레딧 값 가져오기
+        const savedCredits = parseInt(localStorage.getItem('userCredits'));
+        
+        // currentUser에서 크레딧 값 가져오기
+        let userObjectCredits = null;
+        if (currentUser && currentUser.credits) {
+            userObjectCredits = currentUser.credits;
+        }
+        
+        // 우선순위: localStorage > currentUser.credits > 기본값(1250)
+        if (savedCredits && !isNaN(savedCredits)) {
+            userCredits = savedCredits;
+            console.log(`크레딧 초기화: localStorage에서 ${userCredits} 크레딧 로드`);
+        } else if (userObjectCredits && !isNaN(userObjectCredits)) {
+            userCredits = userObjectCredits;
+            console.log(`크레딧 초기화: currentUser에서 ${userCredits} 크레딧 로드`);
+        } else {
+            userCredits = 1250; // 기본값
+            console.log(`크레딧 초기화: 기본값 ${userCredits} 크레딧 설정`);
+        }
     }
     return userCredits;
 }
 
 function updateCreditDisplay() {
-    initializeCredits(); // 크레딧 초기화 보장
+    // userCredits가 정의되지 않은 경우에만 초기화
+    if (typeof userCredits === 'undefined' || userCredits === null) {
+        initializeCredits();
+    }
+    
     const creditAmountElement = document.getElementById('creditAmount');
     if (creditAmountElement) {
         creditAmountElement.textContent = userCredits.toLocaleString();
     }
+    
+    console.log(`크레딧 표시 업데이트: ${userCredits}`);
 }
 
 async function deductCredits(amount) {
-    initializeCredits(); // 크레딧 초기화 보장
+    // userCredits가 정의되지 않은 경우에만 초기화
+    if (typeof userCredits === 'undefined' || userCredits === null) {
+        initializeCredits();
+    }
+    
     if (userCredits >= amount) {
         userCredits -= amount;
         
@@ -2312,7 +2341,11 @@ async function deductCredits(amount) {
 }
 
 async function addCredits(amount) {
-    initializeCredits(); // 크레딧 초기화 보장
+    // userCredits가 정의되지 않은 경우에만 초기화
+    if (typeof userCredits === 'undefined' || userCredits === null) {
+        initializeCredits();
+    }
+    
     userCredits += amount;
     
     // currentUser 객체도 업데이트
@@ -4275,6 +4308,9 @@ async function initializeAuth() {
             }
         }
     }
+    
+    // 크레딧 초기화 (인증 완료 후)
+    initializeCredits();
     
     updateAuthUI();
     updateCreditDisplay();
