@@ -3929,22 +3929,7 @@ function closeSettingsModal() {
     }
 }
 
-// 설정 탭 전환
-function showSettingsTab(tabName) {
-    // 모든 탭 버튼 비활성화
-    document.querySelectorAll('.settings-tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // 모든 탭 콘텐츠 숨기기
-    document.querySelectorAll('.settings-tab-content').forEach(content => {
-        content.style.display = 'none';
-    });
-    
-    // 선택된 탭 활성화
-    event.target.classList.add('active');
-    document.getElementById(tabName + 'Tab').style.display = 'block';
-}
+// 설정 탭 전환 (중복 제거됨 - 아래 더 완전한 함수 사용)
 
 // 다운로드 경로 선택
 async function selectDownloadPath() {
@@ -6745,6 +6730,10 @@ window.copyDisclaimer = copyDisclaimer;
 window.updateLinkGeneratorUI = updateLinkGeneratorUI;
 window.showSettingsModal = showSettingsModal;
 window.closeSettingsModal = closeSettingsModal;
+window.saveSettings = saveSettings;
+window.resetSettings = resetSettings;
+window.loadSettings = loadSettings;
+window.selectDownloadPath = selectDownloadPath;
 window.navigateToRoute = navigateToRoute;
 window.initRouter = initRouter;
 
@@ -6955,6 +6944,144 @@ function showSettingsModal() {
         loadSettings();
         
         console.log('설정 모달 열림');
+    }
+}
+
+// 설정 저장
+function saveSettings() {
+    try {
+        const settings = {
+            language: document.getElementById('languageSelect')?.value || 'ko',
+            enableNotifications: document.getElementById('enableNotifications')?.checked || false,
+            enableSounds: document.getElementById('enableSounds')?.checked || false,
+            coupangAccessKey: document.getElementById('coupangAccessKey')?.value || '',
+            coupangSecretKey: document.getElementById('coupangSecretKey')?.value || '',
+            aliexpressAppKey: document.getElementById('aliexpressAppKey')?.value || '',
+            aliexpressAppSecret: document.getElementById('aliexpressAppSecret')?.value || '',
+            aliexpressTrackingId: document.getElementById('aliexpressTrackingId')?.value || '',
+            downloadPath: document.getElementById('downloadPath')?.value || '',
+            videoQuality: document.getElementById('videoQuality')?.value || 'best'
+        };
+        
+        localStorage.setItem('appSettings', JSON.stringify(settings));
+        
+        // 간편링크생성 UI 업데이트
+        updateLinkGeneratorUI();
+        
+        showToast('설정이 저장되었습니다.', 'success');
+        console.log('설정 저장 완료:', settings);
+    } catch (error) {
+        console.error('설정 저장 오류:', error);
+        showToast('설정 저장에 실패했습니다.', 'error');
+    }
+}
+
+// 설정 로드
+function loadSettings() {
+    try {
+        const savedSettings = localStorage.getItem('appSettings');
+        if (savedSettings) {
+            const settings = JSON.parse(savedSettings);
+            
+            // 각 설정값 적용
+            const languageSelect = document.getElementById('languageSelect');
+            if (languageSelect && settings.language) {
+                languageSelect.value = settings.language;
+            }
+            
+            const enableNotifications = document.getElementById('enableNotifications');
+            if (enableNotifications) {
+                enableNotifications.checked = settings.enableNotifications || false;
+            }
+            
+            const enableSounds = document.getElementById('enableSounds');
+            if (enableSounds) {
+                enableSounds.checked = settings.enableSounds || false;
+            }
+            
+            const coupangAccessKey = document.getElementById('coupangAccessKey');
+            if (coupangAccessKey && settings.coupangAccessKey) {
+                coupangAccessKey.value = settings.coupangAccessKey;
+            }
+            
+            const coupangSecretKey = document.getElementById('coupangSecretKey');
+            if (coupangSecretKey && settings.coupangSecretKey) {
+                coupangSecretKey.value = settings.coupangSecretKey;
+            }
+            
+            const aliexpressAppKey = document.getElementById('aliexpressAppKey');
+            if (aliexpressAppKey && settings.aliexpressAppKey) {
+                aliexpressAppKey.value = settings.aliexpressAppKey;
+            }
+            
+            const aliexpressAppSecret = document.getElementById('aliexpressAppSecret');
+            if (aliexpressAppSecret && settings.aliexpressAppSecret) {
+                aliexpressAppSecret.value = settings.aliexpressAppSecret;
+            }
+            
+            const aliexpressTrackingId = document.getElementById('aliexpressTrackingId');
+            if (aliexpressTrackingId && settings.aliexpressTrackingId) {
+                aliexpressTrackingId.value = settings.aliexpressTrackingId;
+            }
+            
+            const downloadPath = document.getElementById('downloadPath');
+            if (downloadPath && settings.downloadPath) {
+                downloadPath.value = settings.downloadPath;
+            }
+            
+            const videoQuality = document.getElementById('videoQuality');
+            if (videoQuality && settings.videoQuality) {
+                videoQuality.value = settings.videoQuality;
+            }
+            
+            console.log('설정 로드 완료:', settings);
+        }
+    } catch (error) {
+        console.error('설정 로드 오류:', error);
+    }
+}
+
+// 설정 초기화
+function resetSettings() {
+    if (confirm('모든 설정을 초기화하시겠습니까?')) {
+        localStorage.removeItem('appSettings');
+        
+        // 기본값으로 복원
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) languageSelect.value = 'ko';
+        
+        const enableNotifications = document.getElementById('enableNotifications');
+        if (enableNotifications) enableNotifications.checked = true;
+        
+        const enableSounds = document.getElementById('enableSounds');
+        if (enableSounds) enableSounds.checked = true;
+        
+        const coupangAccessKey = document.getElementById('coupangAccessKey');
+        if (coupangAccessKey) coupangAccessKey.value = '';
+        
+        const coupangSecretKey = document.getElementById('coupangSecretKey');
+        if (coupangSecretKey) coupangSecretKey.value = '';
+        
+        const aliexpressAppKey = document.getElementById('aliexpressAppKey');
+        if (aliexpressAppKey) aliexpressAppKey.value = '';
+        
+        const aliexpressAppSecret = document.getElementById('aliexpressAppSecret');
+        if (aliexpressAppSecret) aliexpressAppSecret.value = '';
+        
+        const aliexpressTrackingId = document.getElementById('aliexpressTrackingId');
+        if (aliexpressTrackingId) aliexpressTrackingId.value = '';
+        
+        const downloadPath = document.getElementById('downloadPath');
+        if (downloadPath) downloadPath.value = '';
+        
+        const videoQuality = document.getElementById('videoQuality');
+        if (videoQuality) videoQuality.value = 'best';
+        
+        // 간편링크생성 UI 업데이트
+        updateLinkGeneratorUI();
+        
+        showToast('설정이 초기화되었습니다.', 'success');
+        console.log('설정 초기화 완료');
     }
 }
 
