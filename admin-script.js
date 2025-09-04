@@ -863,3 +863,82 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1000);
 });
+
+// 관리자 탭 전환 기능
+function showAdminTab(tabName) {
+    console.log('관리자 탭 전환:', tabName);
+    
+    // 모든 탭 버튼에서 active 클래스 제거
+    document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // 모든 탭 패널 숨기기
+    document.querySelectorAll('.admin-tab-pane').forEach(pane => {
+        pane.classList.remove('active');
+        pane.style.display = 'none';
+    });
+    
+    // 선택된 탭 버튼에 active 클래스 추가
+    const selectedBtn = document.querySelector(`[data-tab="${tabName}"]`);
+    if (selectedBtn) {
+        selectedBtn.classList.add('active');
+    }
+    
+    // 선택된 탭 패널 표시
+    const selectedPane = document.getElementById(`${tabName}-tab`);
+    if (selectedPane) {
+        selectedPane.style.display = 'block';
+        // 약간의 지연 후 active 클래스 추가 (애니메이션 효과)
+        setTimeout(() => {
+            selectedPane.classList.add('active');
+        }, 10);
+        
+        // 부드러운 스크롤
+        setTimeout(() => {
+            selectedPane.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    }
+    
+    // 로컬 스토리지에 현재 탭 저장
+    localStorage.setItem('activeAdminTab', tabName);
+    
+    // 탭별 데이터 로드
+    loadTabData(tabName);
+}
+
+// 탭별 데이터 로드
+function loadTabData(tabName) {
+    switch(tabName) {
+        case 'dashboard':
+            loadDashboardData();
+            break;
+        case 'users':
+            loadUsersData();
+            break;
+        case 'credits':
+            loadCreditRequests();
+            break;
+        case 'system':
+            // 시스템 설정 데이터 로드
+            break;
+        case 'analytics':
+            // 분석 데이터 로드
+            break;
+    }
+}
+
+// 페이지 로드 시 마지막 활성 탭 복원
+function initializeAdminTabs() {
+    const savedTab = localStorage.getItem('activeAdminTab') || 'dashboard';
+    showAdminTab(savedTab);
+}
+
+// 전역 함수로 등록
+window.showAdminTab = showAdminTab;
+window.initializeAdminTabs = initializeAdminTabs;
+
+// 페이지 로드 시 탭 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    initializeAdminTabs();
+});

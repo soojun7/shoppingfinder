@@ -30,44 +30,13 @@
             </div>
             
             <nav class="sidebar-nav admin-only-nav">
-                <ul class="admin-nav-list">
-                    <li class="nav-item admin-nav-item active">
-                        <a href="#" class="nav-link" onclick="showAdminTab('dashboard', event)">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>대시보드</span>
-                        </a>
-                    </li>
-                    <li class="nav-item admin-nav-item">
-                        <a href="#" class="nav-link" onclick="showAdminTab('users', event)">
-                            <i class="fas fa-users"></i>
-                            <span>사용자 관리</span>
-                        </a>
-                    </li>
-                    <li class="nav-item admin-nav-item">
-                        <a href="#" class="nav-link" onclick="showAdminTab('credits', event)">
-                            <i class="fas fa-coins"></i>
-                            <span>크레딧 관리</span>
-                        </a>
-                    </li>
-                    <li class="nav-item admin-nav-item">
-                        <a href="#" class="nav-link" onclick="showAdminTab('system', event)">
-                            <i class="fas fa-cog"></i>
-                            <span>시스템 설정</span>
-                        </a>
-                    </li>
-                    <li class="nav-item admin-nav-item">
-                        <a href="#" class="nav-link" onclick="showAdminTab('logs', event)">
-                            <i class="fas fa-file-alt"></i>
-                            <span>로그 관리</span>
-                        </a>
-                    </li>
-                    <li class="nav-item admin-nav-item">
-                        <a href="#" class="nav-link" onclick="showAdminTab('analytics', event)">
-                            <i class="fas fa-chart-bar"></i>
-                            <span>분석</span>
-                        </a>
-                    </li>
-                </ul>
+                <div class="admin-nav-info">
+                    <div class="admin-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>관리자 모드</span>
+                    </div>
+                    <p class="admin-description">상단 탭을 사용하여 관리 기능에 접근하세요</p>
+                </div>
             </nav>
             
             <div class="sidebar-footer">
@@ -124,8 +93,63 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- 관리자 탭 메뉴 -->
+                <div class="admin-tab-navigation">
+                    <div class="admin-tab-nav">
+                        <button class="admin-tab-btn active" data-tab="dashboard" onclick="showAdminTab('dashboard')">
+                            <div class="tab-icon">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </div>
+                            <div class="tab-text">
+                                <span class="tab-title">대시보드</span>
+                                <span class="tab-desc">시스템 현황</span>
+                            </div>
+                        </button>
+                        <button class="admin-tab-btn" data-tab="users" onclick="showAdminTab('users')">
+                            <div class="tab-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="tab-text">
+                                <span class="tab-title">사용자 관리</span>
+                                <span class="tab-desc">회원 정보</span>
+                            </div>
+                        </button>
+                        <button class="admin-tab-btn" data-tab="credits" onclick="showAdminTab('credits')">
+                            <div class="tab-icon">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="tab-text">
+                                <span class="tab-title">크레딧 관리</span>
+                                <span class="tab-desc">충전 요청</span>
+                            </div>
+                        </button>
+                        <button class="admin-tab-btn" data-tab="system" onclick="showAdminTab('system')">
+                            <div class="tab-icon">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <div class="tab-text">
+                                <span class="tab-title">시스템 설정</span>
+                                <span class="tab-desc">환경 설정</span>
+                            </div>
+                        </button>
+                        <button class="admin-tab-btn" data-tab="analytics" onclick="showAdminTab('analytics')">
+                            <div class="tab-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="tab-text">
+                                <span class="tab-title">분석</span>
+                                <span class="tab-desc">통계 데이터</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
 
-                <section class="admin-section" id="dashboardSection">
+                <!-- 관리자 탭 콘텐츠 -->
+                <div class="admin-tab-content-wrapper">
+                    <!-- 대시보드 탭 -->
+                    <div class="admin-tab-pane active" id="dashboard-tab">
+                        <section class="admin-section" id="dashboardSection">
 
                     <div class="admin-stats">
                         <div class="stat-card">
@@ -197,10 +221,12 @@
                             <!-- 최근 활동이 여기에 동적으로 추가됩니다 -->
                         </div>
                     </div>
-                </section>
-
-                <!-- 사용자 관리 섹션 -->
-                <section class="admin-section" id="usersSection" style="display: none;">
+                        </section>
+                    </div>
+                    
+                    <!-- 사용자 관리 탭 -->
+                    <div class="admin-tab-pane" id="users-tab">
+                        <section class="admin-section" id="usersSection">
                     <div class="admin-header">
                         <h1><i class="fas fa-users"></i> 사용자 관리</h1>
                         <p>등록된 사용자들을 관리하고 모니터링하세요</p>
@@ -241,10 +267,12 @@
                             <!-- 페이지네이션이 여기에 추가됩니다 -->
                         </div>
                     </div>
-                </section>
-
-                <!-- 크레딧 관리 섹션 -->
-                <section class="admin-section" id="creditsSection" style="display: none;">
+                        </section>
+                    </div>
+                    
+                    <!-- 크레딧 관리 탭 -->
+                    <div class="admin-tab-pane" id="credits-tab">
+                        <section class="admin-section" id="creditsSection">
                     <div class="admin-header">
                         <h1><i class="fas fa-coins"></i> 크레딧 관리</h1>
                         <p>사용자 크레딧을 지급하고 관리하세요</p>
@@ -317,10 +345,12 @@
                             </div>
                         </div>
                     </div>
-                </section>
-
-                <!-- 시스템 설정 섹션 -->
-                <section class="admin-section" id="systemSection" style="display: none;">
+                        </section>
+                    </div>
+                    
+                    <!-- 시스템 설정 탭 -->
+                    <div class="admin-tab-pane" id="system-tab">
+                        <section class="admin-section" id="systemSection">
                     <div class="admin-header">
                         <h1><i class="fas fa-cog"></i> 시스템 설정</h1>
                         <p>시스템 전반의 설정을 관리하세요</p>
@@ -418,39 +448,22 @@
                             <!-- 로그가 여기에 표시됩니다 -->
                         </div>
                     </div>
-                </section>
-
-                <!-- 분석 섹션 -->
-                <section class="admin-section" id="analyticsSection" style="display: none;">
-                    <div class="admin-header">
-                        <h1><i class="fas fa-chart-bar"></i> 분석</h1>
-                        <p>상세한 사용 통계와 분석 데이터를 확인하세요</p>
+                        </section>
                     </div>
-
-                    <div class="admin-content">
-                        <div class="analytics-placeholder">
-                            <i class="fas fa-chart-line"></i>
-                            <h3>분석 기능 준비 중</h3>
-                            <p>상세한 분석 기능이 곧 추가될 예정입니다.</p>
-                        </div>
+                    
+                    <!-- 분석 탭 -->
+                    <div class="admin-tab-pane" id="analytics-tab">
+                        <section class="admin-section" id="analyticsSection">
+                            <div class="admin-content">
+                                <div class="analytics-placeholder">
+                                    <i class="fas fa-chart-line"></i>
+                                    <h3>분석 기능 준비 중</h3>
+                                    <p>상세한 분석 기능이 곧 추가될 예정입니다.</p>
+                                </div>
+                            </div>
+                        </section>
                     </div>
-                </section>
-
-                <!-- 알림 관리 섹션 -->
-                <section class="admin-section" id="notificationsSection" style="display: none;">
-                    <div class="admin-header">
-                        <h1><i class="fas fa-bell"></i> 알림 관리</h1>
-                        <p>시스템 알림과 사용자 알림을 관리하세요</p>
-                    </div>
-
-                    <div class="admin-content">
-                        <div class="notifications-placeholder">
-                            <i class="fas fa-bell"></i>
-                            <h3>알림 관리 기능 준비 중</h3>
-                            <p>알림 관리 기능이 곧 추가될 예정입니다.</p>
-                        </div>
-                    </div>
-                </section>
+                </div>
             </div>
         </main>
     </div>

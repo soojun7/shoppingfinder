@@ -2263,43 +2263,53 @@ let userCredits;
 
 // 크레딧 초기화 함수
 function initializeCredits() {
-    if (typeof userCredits === 'undefined' || userCredits === null) {
-        // localStorage에서 크레딧 값 가져오기
-        const savedCredits = parseInt(localStorage.getItem('userCredits'));
-        
-        // currentUser에서 크레딧 값 가져오기
-        let userObjectCredits = null;
-        if (currentUser && currentUser.credits) {
-            userObjectCredits = currentUser.credits;
-        }
-        
-        // 우선순위: localStorage > currentUser.credits > 기본값(1250)
-        if (savedCredits && !isNaN(savedCredits)) {
-            userCredits = savedCredits;
-            console.log(`크레딧 초기화: localStorage에서 ${userCredits} 크레딧 로드`);
-        } else if (userObjectCredits && !isNaN(userObjectCredits)) {
-            userCredits = userObjectCredits;
-            console.log(`크레딧 초기화: currentUser에서 ${userCredits} 크레딧 로드`);
-        } else {
-            userCredits = 1250; // 기본값
-            console.log(`크레딧 초기화: 기본값 ${userCredits} 크레딧 설정`);
-        }
+    // 이미 초기화된 경우 재초기화하지 않음
+    if (typeof userCredits !== 'undefined' && userCredits !== null) {
+        console.log(`크레딧 이미 초기화됨: ${userCredits}`);
+        return userCredits;
     }
+    
+    // localStorage에서 크레딧 값 가져오기
+    const savedCredits = parseInt(localStorage.getItem('userCredits'));
+    
+    // currentUser에서 크레딧 값 가져오기
+    let userObjectCredits = null;
+    if (currentUser && typeof currentUser.credits === 'number') {
+        userObjectCredits = currentUser.credits;
+    }
+    
+    // 우선순위: localStorage > currentUser.credits > 기본값(1250)
+    if (savedCredits && !isNaN(savedCredits) && savedCredits > 0) {
+        userCredits = savedCredits;
+        console.log(`크레딧 초기화: localStorage에서 ${userCredits} 크레딧 로드`);
+    } else if (userObjectCredits && !isNaN(userObjectCredits) && userObjectCredits >= 0) {
+        userCredits = userObjectCredits;
+        console.log(`크레딧 초기화: currentUser에서 ${userCredits} 크레딧 로드`);
+    } else {
+        userCredits = 1250; // 기본값
+        console.log(`크레딧 초기화: 기본값 ${userCredits} 크레딧 설정`);
+    }
+    
+    // 초기화 후 localStorage에 저장
+    localStorage.setItem('userCredits', userCredits.toString());
+    
     return userCredits;
 }
 
 function updateCreditDisplay() {
-    // userCredits가 정의되지 않은 경우에만 초기화
+    // userCredits가 정의되지 않은 경우에만 초기화 (한 번만)
     if (typeof userCredits === 'undefined' || userCredits === null) {
+        console.log('크레딧 표시 업데이트 중 초기화 필요');
         initializeCredits();
     }
     
     const creditAmountElement = document.getElementById('creditAmount');
-    if (creditAmountElement) {
+    if (creditAmountElement && typeof userCredits !== 'undefined') {
         creditAmountElement.textContent = userCredits.toLocaleString();
+        console.log(`크레딧 표시 업데이트: ${userCredits}`);
+    } else {
+        console.warn('크레딧 표시 업데이트 실패: userCredits 또는 element가 없음');
     }
-    
-    console.log(`크레딧 표시 업데이트: ${userCredits}`);
 }
 
 async function deductCredits(amount) {
@@ -2372,6 +2382,50 @@ async function addCredits(amount) {
     
     showToast(`${amount} 크레딧이 충전되었습니다! 💰`);
 }
+
+// 테스트용 크레딧 설정 함수
+function setTestCredits(amount) {
+    userCredits = amount;
+    localStorage.setItem('userCredits', userCredits.toString());
+    
+    if (currentUser) {
+        currentUser.credits = userCredits;
+        sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    }
+    
+    updateCreditDisplay();
+    console.log(`테스트: 크레딧을 ${amount}으로 설정했습니다.`);
+    showToast(`테스트: 크레딧을 ${amount}으로 설정했습니다.`, 'info');
+}
+
+// 크레딧 테스트 함수
+function testCreditSystem() {
+    console.log('=== 크레딧 시스템 테스트 시작 ===');
+    
+    // 1. 크레딧을 10으로 설정
+    setTestCredits(10);
+    console.log('1. 크레딧 10으로 설정 완료');
+    
+    // 2. 1 크레딧 차감
+    setTimeout(() => {
+        deductCredits(1).then(success => {
+            if (success) {
+                console.log('2. 크레딧 1 차감 완료, 현재 크레딧:', userCredits);
+                console.log('3. localStorage 확인:', localStorage.getItem('userCredits'));
+                console.log('4. currentUser 확인:', currentUser?.credits);
+                
+                showToast(`테스트 완료! 현재 크레딧: ${userCredits}. 새로고침해서 확인하세요.`, 'success');
+            } else {
+                console.error('크레딧 차감 실패');
+            }
+        });
+    }, 1000);
+}
+
+// 전역 함수로 등록 (브라우저 콘솔에서 테스트 가능)
+window.setTestCredits = setTestCredits;
+window.testCreditSystem = testCreditSystem;
 
 function animateCreditChange(amount) {
     const creditAmountElement = document.getElementById('creditAmount');
@@ -3991,58 +4045,109 @@ async function testCoupangConnection(accessKey, secretKey) {
 
 // 설정 저장
 function saveSettings() {
-    const settings = {
-        // 일반 설정
-        language: document.getElementById('languageSelect').value,
-        enableNotifications: document.getElementById('enableNotifications').checked,
-        enableSounds: document.getElementById('enableSounds').checked,
+    try {
+        const settings = {
+            // 일반 설정
+            language: document.getElementById('languageSelect')?.value || 'ko',
+            enableNotifications: document.getElementById('enableNotifications')?.checked || false,
+            enableSounds: document.getElementById('enableSounds')?.checked || false,
+            
+            // 다운로드 설정
+            downloadPath: document.getElementById('downloadPath')?.value || '',
+            videoQuality: document.getElementById('videoQuality')?.value || 'high',
+            fileNameFormat: document.getElementById('fileNameFormat')?.value || 'timestamp',
+            createSubfolders: document.getElementById('createSubfolders')?.checked || false,
+            
+            // API 설정
+            coupangAccessKey: document.getElementById('coupangAccessKey')?.value || '',
+            coupangSecretKey: document.getElementById('coupangSecretKey')?.value || '',
+            enableAutoAffiliate: document.getElementById('enableAutoAffiliate')?.checked || false,
+            
+            // 저장 시간 추가
+            savedAt: new Date().toISOString()
+        };
         
-        // 다운로드 설정
-        downloadPath: document.getElementById('downloadPath').value,
-        videoQuality: document.getElementById('videoQuality').value,
-        fileNameFormat: document.getElementById('fileNameFormat').value,
-        createSubfolders: document.getElementById('createSubfolders').checked,
+        console.log('설정 저장 중:', settings);
         
-        // API 설정
-        coupangAccessKey: document.getElementById('coupangAccessKey').value,
-        coupangSecretKey: document.getElementById('coupangSecretKey').value,
-        enableAutoAffiliate: document.getElementById('enableAutoAffiliate').checked
-    };
-    
-    // 로컬 스토리지에 저장
-    localStorage.setItem('appSettings', JSON.stringify(settings));
-    
-    showToast('설정이 저장되었습니다! 🎉', 'success');
-    closeSettingsModal();
+        // 로컬 스토리지에 저장
+        localStorage.setItem('appSettings', JSON.stringify(settings));
+        
+        // 저장 확인
+        const saved = localStorage.getItem('appSettings');
+        if (saved) {
+            console.log('설정 저장 완료:', JSON.parse(saved));
+            showToast('설정이 저장되었습니다! 🎉', 'success');
+        } else {
+            throw new Error('설정 저장 실패');
+        }
+        
+        // 설정 모달이 있으면 닫기
+        if (typeof closeSettingsModal === 'function') {
+            closeSettingsModal();
+        }
+    } catch (error) {
+        console.error('설정 저장 오류:', error);
+        showToast('설정 저장 중 오류가 발생했습니다.', 'error');
+    }
 }
 
 // 설정 로드
 function loadSettings() {
-    const savedSettings = localStorage.getItem('appSettings');
-    
-    if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
+    try {
+        const savedSettings = localStorage.getItem('appSettings');
+        console.log('설정 로드 중:', savedSettings);
         
-        // 일반 설정
-        document.getElementById('languageSelect').value = settings.language || 'ko';
-        document.getElementById('enableNotifications').checked = settings.enableNotifications !== false;
-        document.getElementById('enableSounds').checked = settings.enableSounds !== false;
-        
-        // 다운로드 설정
-        document.getElementById('downloadPath').value = settings.downloadPath || '';
-        document.getElementById('videoQuality').value = settings.videoQuality || 'high';
-        document.getElementById('fileNameFormat').value = settings.fileNameFormat || 'timestamp';
-        document.getElementById('createSubfolders').checked = settings.createSubfolders !== false;
-        
-        // API 설정
-        document.getElementById('coupangAccessKey').value = settings.coupangAccessKey || '';
-        document.getElementById('coupangSecretKey').value = settings.coupangSecretKey || '';
-        document.getElementById('enableAutoAffiliate').checked = settings.enableAutoAffiliate || false;
-    } else {
-        // 기본 다운로드 경로 설정
-        getDefaultDownloadPath().then(path => {
-            document.getElementById('downloadPath').value = path;
-        });
+        if (savedSettings) {
+            const settings = JSON.parse(savedSettings);
+            console.log('파싱된 설정:', settings);
+            
+            // 일반 설정
+            const languageSelect = document.getElementById('languageSelect');
+            if (languageSelect) languageSelect.value = settings.language || 'ko';
+            
+            const enableNotifications = document.getElementById('enableNotifications');
+            if (enableNotifications) enableNotifications.checked = settings.enableNotifications !== false;
+            
+            const enableSounds = document.getElementById('enableSounds');
+            if (enableSounds) enableSounds.checked = settings.enableSounds !== false;
+            
+            // 다운로드 설정
+            const downloadPath = document.getElementById('downloadPath');
+            if (downloadPath) downloadPath.value = settings.downloadPath || '';
+            
+            const videoQuality = document.getElementById('videoQuality');
+            if (videoQuality) videoQuality.value = settings.videoQuality || 'high';
+            
+            const fileNameFormat = document.getElementById('fileNameFormat');
+            if (fileNameFormat) fileNameFormat.value = settings.fileNameFormat || 'timestamp';
+            
+            const createSubfolders = document.getElementById('createSubfolders');
+            if (createSubfolders) createSubfolders.checked = settings.createSubfolders !== false;
+            
+            // API 설정
+            const coupangAccessKey = document.getElementById('coupangAccessKey');
+            if (coupangAccessKey) coupangAccessKey.value = settings.coupangAccessKey || '';
+            
+            const coupangSecretKey = document.getElementById('coupangSecretKey');
+            if (coupangSecretKey) coupangSecretKey.value = settings.coupangSecretKey || '';
+            
+            const enableAutoAffiliate = document.getElementById('enableAutoAffiliate');
+            if (enableAutoAffiliate) enableAutoAffiliate.checked = settings.enableAutoAffiliate || false;
+            
+            console.log('설정 로드 완료');
+        } else {
+            console.log('저장된 설정이 없음, 기본값 사용');
+            // 기본 다운로드 경로 설정
+            if (typeof getDefaultDownloadPath === 'function') {
+                getDefaultDownloadPath().then(path => {
+                    const downloadPath = document.getElementById('downloadPath');
+                    if (downloadPath) downloadPath.value = path;
+                });
+            }
+        }
+    } catch (error) {
+        console.error('설정 로드 오류:', error);
+        showToast('설정 로드 중 오류가 발생했습니다.', 'error');
     }
 }
 

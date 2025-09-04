@@ -429,9 +429,18 @@
             }
         }
         
-        // 페이지 로드 시 기본 탭 설정
+        // 페이지 로드 시 기본 탭 설정 및 설정 로드
         document.addEventListener('DOMContentLoaded', function() {
-            showSettingsTab('general');
+            // 설정 탭 초기화
+            initializeSettingsTabs();
+            
+            // 설정 로드
+            setTimeout(() => {
+                if (typeof loadSettings === 'function') {
+                    loadSettings();
+                    console.log('설정 로드 완료');
+                }
+            }, 500);
         });
     </script>
 </body>
