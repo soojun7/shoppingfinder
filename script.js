@@ -141,6 +141,9 @@ async function initializeApp() {
     // 인증 상태 초기화
     await initializeAuth();
     
+    // 라우터 초기화 (SPA 라우팅)
+    initRouter();
+    
     console.log('쇼핑파인더 앱이 초기화되었습니다.');
 }
 
@@ -6286,6 +6289,7 @@ window.toggleSidebar = toggleSidebar;
 window.closeSidebar = closeSidebar;
 window.showSearch = showSearch;
 window.showFavorites = showFavorites;
+window.showSettings = showSettings;
 window.openSettingsModal = openSettingsModal;
 window.openChargeModal = openChargeModal;
 window.closeAuthModal = closeAuthModal;
@@ -6719,7 +6723,7 @@ function updateLinkGeneratorUI() {
     });
 }
 
-// 전역 함수로 등록
+// 전역 함수로 등록 (라우터 및 모달 관련)
 window.showLinkGenerator = showLinkGenerator;
 window.showLinkGeneratorRoute = showLinkGeneratorRoute;
 window.closeLinkGeneratorModal = closeLinkGeneratorModal;
@@ -6730,10 +6734,10 @@ window.copyToClipboard = copyToClipboard;
 window.switchDisclaimer = switchDisclaimer;
 window.copyDisclaimer = copyDisclaimer;
 window.updateLinkGeneratorUI = updateLinkGeneratorUI;
-window.showSettings = showSettings;
 window.showSettingsModal = showSettingsModal;
 window.closeSettingsModal = closeSettingsModal;
 window.navigateToRoute = navigateToRoute;
+window.initRouter = initRouter;
 
 // 모달 외부 클릭 시 닫기
 document.addEventListener('click', function(e) {
@@ -6961,13 +6965,8 @@ function closeSettingsModal() {
     }
 }
 
-// 페이지 로드 시 라우터 초기화
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initRouter);
-} else {
-    // DOM이 이미 로드된 경우 즉시 실행
-    initRouter();
-}
+// initializeApp 함수에서 라우터 초기화를 호출하도록 수정
+// (DOMContentLoaded 중복 방지)
 
 // 앱 초기화 완료 로그
 console.log('🎉 쇼핑파인더가 준비되었습니다!');
