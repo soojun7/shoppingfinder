@@ -6775,11 +6775,22 @@ function initRouter() {
         navigateToRoute(path, false);
     });
     
+    // URL 정리 (해시 제거)
+    if (window.location.hash) {
+        const cleanUrl = window.location.pathname + window.location.search;
+        window.history.replaceState({}, document.title, cleanUrl);
+    }
+    
     // 초기 라우트 처리
     const initialPath = window.location.pathname;
+    console.log('초기 경로:', initialPath);
+    
     if (routes[initialPath]) {
         navigateToRoute(initialPath, false);
+    } else if (initialPath === '/' || initialPath === '/index.html') {
+        navigateToRoute('/search', true);
     } else {
+        // 알 수 없는 경로는 검색으로 리다이렉트
         navigateToRoute('/search', true);
     }
 }
@@ -6790,8 +6801,9 @@ function navigateToRoute(path, pushState = true) {
         currentPage = path;
         
         // URL 업데이트 (pushState가 true일 때만)
-        if (pushState) {
+        if (pushState && window.location.pathname !== path) {
             window.history.pushState({ path }, '', path);
+            console.log(`URL 업데이트: ${path}`);
         }
         
         // 라우트 핸들러 실행
