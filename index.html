@@ -45,6 +45,12 @@
                     </li>
 
                     <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showLinkGenerator()">
+                            <i class="fas fa-link"></i>
+                            <span>간편링크생성</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="settings.html" class="nav-link">
                             <i class="fas fa-cog"></i>
                             <span>설정</span>
@@ -395,6 +401,135 @@
         </div>
     </div>
 
+    <!-- 간편링크생성 모달 -->
+    <div class="modal" id="linkGeneratorModal">
+        <div class="modal-content link-generator-modal">
+            <div class="modal-header">
+                <h2>
+                    <i class="fas fa-link"></i>
+                    간편링크생성
+                </h2>
+                <button class="close-btn" onclick="closeLinkGeneratorModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- 플랫폼 선택 -->
+                <div class="platform-selector">
+                    <div class="platform-tabs">
+                        <button class="platform-tab active" data-platform="coupang" onclick="switchPlatform('coupang')">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>쿠팡</span>
+                        </button>
+                        <button class="platform-tab" data-platform="aliexpress" onclick="switchPlatform('aliexpress')">
+                            <i class="fas fa-globe"></i>
+                            <span>알리익스프레스</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 쿠팡 섹션 -->
+                <div class="platform-section active" id="coupang-section">
+                    <div class="input-section">
+                        <label for="coupangOriginalLink">쿠팡 상품 링크</label>
+                        <div class="input-group">
+                            <input type="url" id="coupangOriginalLink" class="modern-input" 
+                                   placeholder="https://www.coupang.com/vp/products/..." 
+                                   onpaste="setTimeout(() => generateCoupangLink(), 100)">
+                            <button class="generate-btn" onclick="generateCoupangLink()">
+                                <i class="fas fa-magic"></i>
+                                변환
+                            </button>
+                        </div>
+                        <small class="input-help">
+                            <i class="fas fa-info-circle"></i>
+                            쿠팡 상품 페이지 URL을 입력하세요
+                        </small>
+                    </div>
+                    
+                    <div class="result-section" id="coupangResult" style="display: none;">
+                        <label>생성된 파트너스 링크</label>
+                        <div class="result-group">
+                            <textarea id="coupangPartnerLink" class="result-textarea" readonly></textarea>
+                            <button class="copy-btn" onclick="copyToClipboard('coupangPartnerLink')">
+                                <i class="fas fa-copy"></i>
+                                복사
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 알리익스프레스 섹션 -->
+                <div class="platform-section" id="aliexpress-section">
+                    <div class="input-section">
+                        <label for="aliexpressOriginalLink">알리익스프레스 상품 링크</label>
+                        <div class="input-group">
+                            <input type="url" id="aliexpressOriginalLink" class="modern-input" 
+                                   placeholder="https://www.aliexpress.com/item/..." 
+                                   onpaste="setTimeout(() => generateAliexpressLink(), 100)">
+                            <button class="generate-btn" onclick="generateAliexpressLink()">
+                                <i class="fas fa-magic"></i>
+                                변환
+                            </button>
+                        </div>
+                        <small class="input-help">
+                            <i class="fas fa-info-circle"></i>
+                            알리익스프레스 상품 페이지 URL을 입력하세요
+                        </small>
+                    </div>
+                    
+                    <div class="result-section" id="aliexpressResult" style="display: none;">
+                        <label>생성된 제휴 링크</label>
+                        <div class="result-group">
+                            <textarea id="aliexpressPartnerLink" class="result-textarea" readonly></textarea>
+                            <button class="copy-btn" onclick="copyToClipboard('aliexpressPartnerLink')">
+                                <i class="fas fa-copy"></i>
+                                복사
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 필수 문구 섹션 -->
+                <div class="disclaimer-section">
+                    <div class="disclaimer-header">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>게시글 작성 시 필수 문구</h3>
+                    </div>
+                    
+                    <div class="disclaimer-tabs">
+                        <button class="disclaimer-tab active" data-type="coupang" onclick="switchDisclaimer('coupang')">
+                            쿠팡 파트너스
+                        </button>
+                        <button class="disclaimer-tab" data-type="aliexpress" onclick="switchDisclaimer('aliexpress')">
+                            알리익스프레스
+                        </button>
+                    </div>
+                    
+                    <div class="disclaimer-content active" id="coupang-disclaimer">
+                        <div class="disclaimer-text">
+                            <p>"이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다."</p>
+                        </div>
+                        <button class="copy-btn" onclick="copyDisclaimer('coupang')">
+                            <i class="fas fa-copy"></i>
+                            문구 복사
+                        </button>
+                    </div>
+                    
+                    <div class="disclaimer-content" id="aliexpress-disclaimer">
+                        <div class="disclaimer-text">
+                            <p>"이 포스팅은 알리익스프레스 제휴 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다."</p>
+                        </div>
+                        <button class="copy-btn" onclick="copyDisclaimer('aliexpress')">
+                            <i class="fas fa-copy"></i>
+                            문구 복사
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

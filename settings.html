@@ -312,7 +312,7 @@
                             <div class="section-content">
                                 <div class="setting-item">
                                     <label for="coupangAccessKey">Access Key</label>
-                                    <input type="text" id="coupangAccessKey" class="modern-input" placeholder="쿠팡파트너스 Access Key를 입력하세요">
+                                    <input type="text" id="coupangAccessKey" class="modern-input wide-input" placeholder="쿠팡파트너스 Access Key를 입력하세요">
                                     <small class="setting-help">
                                         <i class="fas fa-info-circle"></i>
                                         쿠팡파트너스에서 발급받은 Access Key를 입력하세요
@@ -321,7 +321,7 @@
                                 <div class="setting-item">
                                     <label for="coupangSecretKey">Secret Key</label>
                                     <div class="password-input-group">
-                                        <input type="password" id="coupangSecretKey" class="modern-input" placeholder="쿠팡파트너스 Secret Key를 입력하세요">
+                                        <input type="password" id="coupangSecretKey" class="modern-input wide-input" placeholder="쿠팡파트너스 Secret Key를 입력하세요">
                                         <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('coupangSecretKey')">
                                             <i class="fas fa-eye"></i>
                                         </button>
@@ -346,25 +346,37 @@
                         <div class="settings-section">
                             <div class="section-header">
                                 <div class="section-icon">
-                                    <i class="fas fa-link"></i>
+                                    <i class="fas fa-globe"></i>
                                 </div>
                                 <div class="section-title">
-                                    <h3>제휴 링크 설정</h3>
-                                    <p>자동 제휴 링크 생성 옵션을 설정하세요</p>
+                                    <h3>알리익스프레스 API</h3>
+                                    <p>알리익스프레스 제휴 프로그램 연동을 위한 API 키를 설정하세요</p>
                                 </div>
                             </div>
                             <div class="section-content">
                                 <div class="setting-item">
-                                    <div class="toggle-setting">
-                                        <div class="toggle-info">
-                                            <label for="enableAutoAffiliate">자동 제휴 링크 생성</label>
-                                            <span class="toggle-description">검색 결과에 자동으로 제휴 링크를 추가합니다</span>
-                                        </div>
-                                        <label class="modern-toggle">
-                                            <input type="checkbox" id="enableAutoAffiliate">
-                                            <span class="toggle-slider"></span>
-                                        </label>
-                                    </div>
+                                    <label for="aliexpressAppKey">App Key</label>
+                                    <input type="text" id="aliexpressAppKey" class="modern-input wide-input" placeholder="알리익스프레스 App Key를 입력하세요">
+                                    <small class="setting-help">
+                                        <i class="fas fa-info-circle"></i>
+                                        알리익스프레스 제휴 프로그램에서 발급받은 App Key를 입력하세요
+                                    </small>
+                                </div>
+                                <div class="setting-item">
+                                    <label for="aliexpressAppSecret">App Secret</label>
+                                    <input type="password" id="aliexpressAppSecret" class="modern-input wide-input" placeholder="알리익스프레스 App Secret을 입력하세요">
+                                    <small class="setting-help">
+                                        <i class="fas fa-info-circle"></i>
+                                        알리익스프레스 제휴 프로그램에서 발급받은 App Secret을 입력하세요
+                                    </small>
+                                </div>
+                                <div class="setting-item">
+                                    <label for="aliexpressTrackingId">Tracking ID</label>
+                                    <input type="text" id="aliexpressTrackingId" class="modern-input wide-input" placeholder="알리익스프레스 Tracking ID를 입력하세요">
+                                    <small class="setting-help">
+                                        <i class="fas fa-info-circle"></i>
+                                        제휴 링크 추적을 위한 Tracking ID를 입력하세요
+                                    </small>
                                 </div>
                             </div>
                         </div>

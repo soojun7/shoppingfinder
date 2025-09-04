@@ -4061,7 +4061,11 @@ function saveSettings() {
             // API 설정
             coupangAccessKey: document.getElementById('coupangAccessKey')?.value || '',
             coupangSecretKey: document.getElementById('coupangSecretKey')?.value || '',
-            enableAutoAffiliate: document.getElementById('enableAutoAffiliate')?.checked || false,
+            
+            // 알리익스프레스 API 설정
+            aliexpressAppKey: document.getElementById('aliexpressAppKey')?.value || '',
+            aliexpressAppSecret: document.getElementById('aliexpressAppSecret')?.value || '',
+            aliexpressTrackingId: document.getElementById('aliexpressTrackingId')?.value || '',
             
             // 저장 시간 추가
             savedAt: new Date().toISOString()
@@ -4131,8 +4135,15 @@ function loadSettings() {
             const coupangSecretKey = document.getElementById('coupangSecretKey');
             if (coupangSecretKey) coupangSecretKey.value = settings.coupangSecretKey || '';
             
-            const enableAutoAffiliate = document.getElementById('enableAutoAffiliate');
-            if (enableAutoAffiliate) enableAutoAffiliate.checked = settings.enableAutoAffiliate || false;
+            // 알리익스프레스 API 설정
+            const aliexpressAppKey = document.getElementById('aliexpressAppKey');
+            if (aliexpressAppKey) aliexpressAppKey.value = settings.aliexpressAppKey || '';
+            
+            const aliexpressAppSecret = document.getElementById('aliexpressAppSecret');
+            if (aliexpressAppSecret) aliexpressAppSecret.value = settings.aliexpressAppSecret || '';
+            
+            const aliexpressTrackingId = document.getElementById('aliexpressTrackingId');
+            if (aliexpressTrackingId) aliexpressTrackingId.value = settings.aliexpressTrackingId || '';
             
             console.log('설정 로드 완료');
         } else {
@@ -6365,7 +6376,368 @@ function initializeSettingsTabs() {
 window.showSettingsTab = showSettingsTab;
 window.initializeSettingsTabs = initializeSettingsTabs;
 
+// ==================== 간편링크생성 기능 ====================
+
+// 간편링크생성 모달 열기
+function showLinkGenerator() {
+    const modal = document.getElementById('linkGeneratorModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        // 기본 플랫폼을 쿠팡으로 설정
+        switchPlatform('coupang');
+        switchDisclaimer('coupang');
+        
+        // API 키 상태 확인 및 UI 업데이트
+        updateLinkGeneratorUI();
+        
+        console.log('간편링크생성 모달 열림');
+    }
+}
+
+// 간편링크생성 모달 닫기
+function closeLinkGeneratorModal() {
+    const modal = document.getElementById('linkGeneratorModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        
+        // 입력 필드 초기화
+        document.getElementById('coupangOriginalLink').value = '';
+        document.getElementById('aliexpressOriginalLink').value = '';
+        
+        // 결과 섹션 숨기기
+        document.getElementById('coupangResult').style.display = 'none';
+        document.getElementById('aliexpressResult').style.display = 'none';
+        
+        console.log('간편링크생성 모달 닫힘');
+    }
+}
+
+// 플랫폼 전환
+function switchPlatform(platform) {
+    // 모든 플랫폼 탭에서 active 클래스 제거
+    document.querySelectorAll('.platform-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // 모든 플랫폼 섹션 숨기기
+    document.querySelectorAll('.platform-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    // 선택된 플랫폼 탭에 active 클래스 추가
+    const selectedTab = document.querySelector(`[data-platform="${platform}"]`);
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+    }
+    
+    // 선택된 플랫폼 섹션 표시
+    const selectedSection = document.getElementById(`${platform}-section`);
+    if (selectedSection) {
+        selectedSection.classList.add('active');
+    }
+    
+    console.log(`플랫폼 전환: ${platform}`);
+}
+
+// 쿠팡 파트너스 링크 생성
+async function generateCoupangLink() {
+    const originalLink = document.getElementById('coupangOriginalLink').value.trim();
+    
+    if (!originalLink) {
+        showToast('쿠팡 상품 링크를 입력해주세요.', 'error');
+        return;
+    }
+    
+    if (!originalLink.includes('coupang.com')) {
+        showToast('올바른 쿠팡 링크를 입력해주세요.', 'error');
+        return;
+    }
+    
+    try {
+        // 설정에서 파트너스 정보 가져오기
+        const settings = JSON.parse(localStorage.getItem('appSettings') || '{}');
+        const accessKey = settings.coupangAccessKey;
+        const secretKey = settings.coupangSecretKey;
+        
+        if (!accessKey || !secretKey) {
+            showToast('설정에서 쿠팡 파트너스 API 키를 먼저 설정해주세요.', 'error');
+            return;
+        }
+        
+        // 상품 ID 추출
+        const productIdMatch = originalLink.match(/products\/(\d+)/);
+        if (!productIdMatch) {
+            showToast('상품 ID를 찾을 수 없습니다. 올바른 쿠팡 상품 링크인지 확인해주세요.', 'error');
+            return;
+        }
+        
+        const productId = productIdMatch[1];
+        
+        // 파트너스 링크 생성 (간단한 형태)
+        const partnerLink = `https://link.coupang.com/a/${accessKey.substring(0, 8)}?lptag=AF${accessKey.substring(8, 16)}&subid=&pageKey=${productId}&traceid=V0-153&itemId=${productId}`;
+        
+        // 결과 표시
+        document.getElementById('coupangPartnerLink').value = partnerLink;
+        document.getElementById('coupangResult').style.display = 'block';
+        
+        showToast('쿠팡 파트너스 링크가 생성되었습니다! 🎉', 'success');
+        
+        console.log('쿠팡 파트너스 링크 생성 완료:', partnerLink);
+        
+    } catch (error) {
+        console.error('쿠팡 링크 생성 오류:', error);
+        showToast('링크 생성 중 오류가 발생했습니다.', 'error');
+    }
+}
+
+// 알리익스프레스 제휴 링크 생성
+async function generateAliexpressLink() {
+    const originalLink = document.getElementById('aliexpressOriginalLink').value.trim();
+    
+    if (!originalLink) {
+        showToast('알리익스프레스 상품 링크를 입력해주세요.', 'error');
+        return;
+    }
+    
+    if (!originalLink.includes('aliexpress.com')) {
+        showToast('올바른 알리익스프레스 링크를 입력해주세요.', 'error');
+        return;
+    }
+    
+    try {
+        // 설정에서 알리익스프레스 API 정보 가져오기
+        const settings = JSON.parse(localStorage.getItem('appSettings') || '{}');
+        const appKey = settings.aliexpressAppKey;
+        const appSecret = settings.aliexpressAppSecret;
+        const trackingId = settings.aliexpressTrackingId;
+        
+        if (!appKey || !appSecret) {
+            showToast('설정에서 알리익스프레스 API 키를 먼저 설정해주세요.', 'error');
+            return;
+        }
+        
+        // 상품 ID 추출
+        const productIdMatch = originalLink.match(/item\/(\d+)\.html/) || originalLink.match(/\/(\d+)\.html/);
+        if (!productIdMatch) {
+            showToast('상품 ID를 찾을 수 없습니다. 올바른 알리익스프레스 상품 링크인지 확인해주세요.', 'error');
+            return;
+        }
+        
+        const productId = productIdMatch[1];
+        
+        // 제휴 링크 생성 (trackingId 포함)
+        const affiliateLink = `https://s.click.aliexpress.com/e/_${appKey.substring(0, 8)}?productId=${productId}&trackingId=${trackingId || 'default'}`;
+        
+        // 결과 표시
+        document.getElementById('aliexpressPartnerLink').value = affiliateLink;
+        document.getElementById('aliexpressResult').style.display = 'block';
+        
+        showToast('알리익스프레스 제휴 링크가 생성되었습니다! 🎉', 'success');
+        
+        console.log('알리익스프레스 제휴 링크 생성 완료:', affiliateLink);
+        
+    } catch (error) {
+        console.error('알리익스프레스 링크 생성 오류:', error);
+        showToast('링크 생성 중 오류가 발생했습니다.', 'error');
+    }
+}
+
+// 클립보드에 복사
+async function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    if (!element || !element.value) {
+        showToast('복사할 내용이 없습니다.', 'error');
+        return;
+    }
+    
+    try {
+        await navigator.clipboard.writeText(element.value);
+        showToast('클립보드에 복사되었습니다! 📋', 'success');
+        
+        // 복사 버튼 애니메이션
+        const copyBtn = element.parentElement.querySelector('.copy-btn');
+        if (copyBtn) {
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check"></i> 복사됨';
+            copyBtn.style.background = 'var(--success-color)';
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+                copyBtn.style.background = '';
+            }, 2000);
+        }
+        
+    } catch (error) {
+        console.error('클립보드 복사 오류:', error);
+        
+        // 폴백: 텍스트 선택
+        element.select();
+        element.setSelectionRange(0, 99999);
+        
+        try {
+            document.execCommand('copy');
+            showToast('클립보드에 복사되었습니다! 📋', 'success');
+        } catch (fallbackError) {
+            showToast('복사에 실패했습니다. 수동으로 복사해주세요.', 'error');
+        }
+    }
+}
+
+// 필수 문구 탭 전환
+function switchDisclaimer(type) {
+    // 모든 필수 문구 탭에서 active 클래스 제거
+    document.querySelectorAll('.disclaimer-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // 모든 필수 문구 콘텐츠 숨기기
+    document.querySelectorAll('.disclaimer-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // 선택된 탭에 active 클래스 추가
+    const selectedTab = document.querySelector(`[data-type="${type}"]`);
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+    }
+    
+    // 선택된 콘텐츠 표시
+    const selectedContent = document.getElementById(`${type}-disclaimer`);
+    if (selectedContent) {
+        selectedContent.classList.add('active');
+    }
+    
+    console.log(`필수 문구 탭 전환: ${type}`);
+}
+
+// 필수 문구 복사
+async function copyDisclaimer(type) {
+    const disclaimerTexts = {
+        coupang: '"이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다."',
+        aliexpress: '"이 포스팅은 알리익스프레스 제휴 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다."'
+    };
+    
+    const text = disclaimerTexts[type];
+    if (!text) {
+        showToast('복사할 문구를 찾을 수 없습니다.', 'error');
+        return;
+    }
+    
+    try {
+        await navigator.clipboard.writeText(text);
+        showToast('필수 문구가 클립보드에 복사되었습니다! 📋', 'success');
+        
+        // 복사 버튼 애니메이션
+        const copyBtn = document.querySelector(`#${type}-disclaimer .copy-btn`);
+        if (copyBtn) {
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check"></i> 복사됨';
+            copyBtn.style.background = 'var(--success-color)';
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+                copyBtn.style.background = '';
+            }, 2000);
+        }
+        
+    } catch (error) {
+        console.error('필수 문구 복사 오류:', error);
+        showToast('복사에 실패했습니다.', 'error');
+    }
+}
+
+// API 키 상태 확인 및 UI 업데이트
+function updateLinkGeneratorUI() {
+    const settings = JSON.parse(localStorage.getItem('appSettings') || '{}');
+    
+    // 쿠팡 API 키 확인
+    const coupangAccessKey = settings.coupangAccessKey;
+    const coupangSecretKey = settings.coupangSecretKey;
+    const hasCoupangKeys = coupangAccessKey && coupangSecretKey;
+    
+    // 알리익스프레스 API 키 확인
+    const aliexpressAppKey = settings.aliexpressAppKey;
+    const aliexpressAppSecret = settings.aliexpressAppSecret;
+    const hasAliexpressKeys = aliexpressAppKey && aliexpressAppSecret;
+    
+    // 쿠팡 입력 필드 상태 업데이트
+    const coupangInput = document.getElementById('coupangOriginalLink');
+    const coupangButton = document.querySelector('#coupang-section .generate-btn');
+    
+    if (coupangInput && coupangButton) {
+        if (hasCoupangKeys) {
+            coupangInput.disabled = false;
+            coupangInput.placeholder = 'https://www.coupang.com/vp/products/...';
+            coupangButton.disabled = false;
+            coupangButton.style.opacity = '1';
+        } else {
+            coupangInput.disabled = true;
+            coupangInput.placeholder = '설정에서 쿠팡 파트너스 API 키를 먼저 설정해주세요';
+            coupangInput.value = '';
+            coupangButton.disabled = true;
+            coupangButton.style.opacity = '0.5';
+        }
+    }
+    
+    // 알리익스프레스 입력 필드 상태 업데이트
+    const aliexpressInput = document.getElementById('aliexpressOriginalLink');
+    const aliexpressButton = document.querySelector('#aliexpress-section .generate-btn');
+    
+    if (aliexpressInput && aliexpressButton) {
+        if (hasAliexpressKeys) {
+            aliexpressInput.disabled = false;
+            aliexpressInput.placeholder = 'https://www.aliexpress.com/item/...';
+            aliexpressButton.disabled = false;
+            aliexpressButton.style.opacity = '1';
+        } else {
+            aliexpressInput.disabled = true;
+            aliexpressInput.placeholder = '설정에서 알리익스프레스 API 키를 먼저 설정해주세요';
+            aliexpressInput.value = '';
+            aliexpressButton.disabled = true;
+            aliexpressButton.style.opacity = '0.5';
+        }
+    }
+    
+    console.log('링크 생성기 UI 업데이트:', {
+        hasCoupangKeys,
+        hasAliexpressKeys
+    });
+}
+
+// 전역 함수로 등록
+window.showLinkGenerator = showLinkGenerator;
+window.closeLinkGeneratorModal = closeLinkGeneratorModal;
+window.switchPlatform = switchPlatform;
+window.generateCoupangLink = generateCoupangLink;
+window.generateAliexpressLink = generateAliexpressLink;
+window.copyToClipboard = copyToClipboard;
+window.switchDisclaimer = switchDisclaimer;
+window.copyDisclaimer = copyDisclaimer;
+window.updateLinkGeneratorUI = updateLinkGeneratorUI;
+
+// 모달 외부 클릭 시 닫기
+document.addEventListener('click', function(e) {
+    const linkModal = document.getElementById('linkGeneratorModal');
+    if (e.target === linkModal) {
+        closeLinkGeneratorModal();
+    }
+});
+
+// ESC 키로 모달 닫기
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const linkModal = document.getElementById('linkGeneratorModal');
+        if (linkModal && linkModal.style.display === 'flex') {
+            closeLinkGeneratorModal();
+        }
+    }
+});
+
 // 앱 초기화 완료 로그
 console.log('🎉 쇼핑파인더가 준비되었습니다!');
 console.log('💡 Ctrl/Cmd + K로 검색창에 빠르게 접근할 수 있습니다.');
 console.log('🔍 다양한 국가의 언어로 TikTok 콘텐츠를 검색해보세요!');
+console.log('🔗 간편링크생성으로 쿠팡/알리익스프레스 제휴 링크를 만들어보세요!');
