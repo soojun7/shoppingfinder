@@ -7,8 +7,8 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon.png?v=1">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon.png?v=1">
     <link rel="shortcut icon" href="favicon.png?v=1">
-    <link rel="stylesheet" href="styles.css?v=1.4">
-    <link rel="stylesheet" href="settings-styles.css?v=1.4">
+    <link rel="stylesheet" href="styles.css?v=1.5">
+    <link rel="stylesheet" href="settings-styles.css?v=1.5">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -45,7 +45,7 @@
                     </li>
 
                     <li class="nav-item">
-                        <a href="#" class="nav-link" onclick="showLinkGenerator()">
+                        <a href="#" class="nav-link" onclick="showLinkGeneratorRoute(event)">
                             <i class="fas fa-link"></i>
                             <span>간편링크생성</span>
                         </a>
@@ -531,6 +531,241 @@
         </div>
     </div>
 
-    <script src="script.js?v=1.4"></script>
+    <!-- 설정 모달 -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content settings-modal">
+            <div class="modal-header">
+                <h2>
+                    <i class="fas fa-cog"></i>
+                    설정
+                </h2>
+                <button class="close-btn" onclick="closeSettingsModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- 설정 탭 네비게이션 -->
+                <div class="settings-tab-navigation">
+                    <div class="tab-nav">
+                        <button class="tab-btn active" data-tab="general" onclick="showSettingsTab('general')">
+                            <div class="tab-icon">
+                                <i class="fas fa-sliders-h"></i>
+                            </div>
+                            <div class="tab-text">
+                                <span class="tab-title">일반 설정</span>
+                                <span class="tab-desc">언어 및 알림</span>
+                            </div>
+                        </button>
+                        <button class="tab-btn" data-tab="download" onclick="showSettingsTab('download')">
+                            <div class="tab-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="tab-text">
+                                <span class="tab-title">다운로드</span>
+                                <span class="tab-desc">저장 경로 및 품질</span>
+                            </div>
+                        </button>
+                        <button class="tab-btn" data-tab="api" onclick="showSettingsTab('api')">
+                            <div class="tab-icon">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="tab-text">
+                                <span class="tab-title">API 설정</span>
+                                <span class="tab-desc">외부 서비스 연동</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 설정 탭 콘텐츠 -->
+                <div class="tab-content-wrapper">
+                    <!-- 일반 설정 탭 -->
+                    <div class="tab-pane active" id="general-tab">
+                        <div class="settings-section">
+                            <div class="section-header">
+                                <div class="section-icon">
+                                    <i class="fas fa-globe"></i>
+                                </div>
+                                <div class="section-title">
+                                    <h3>언어 설정</h3>
+                                    <p>인터페이스 언어를 선택하세요</p>
+                                </div>
+                            </div>
+                            <div class="section-content">
+                                <div class="setting-item">
+                                    <label for="languageSelect">인터페이스 언어</label>
+                                    <div class="select-wrapper">
+                                        <select id="languageSelect" class="modern-select">
+                                            <option value="ko">🇰🇷 한국어</option>
+                                            <option value="en">🇺🇸 English</option>
+                                            <option value="ja">🇯🇵 日本語</option>
+                                        </select>
+                                        <i class="fas fa-chevron-down select-arrow"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-section">
+                            <div class="section-header">
+                                <div class="section-icon">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                                <div class="section-title">
+                                    <h3>알림 설정</h3>
+                                    <p>알림 및 소리 설정을 관리하세요</p>
+                                </div>
+                            </div>
+                            <div class="section-content">
+                                <div class="setting-item">
+                                    <div class="toggle-setting">
+                                        <div class="toggle-info">
+                                            <label for="enableNotifications">알림 활성화</label>
+                                            <span class="toggle-description">새로운 업데이트 및 중요 알림을 받습니다</span>
+                                        </div>
+                                        <label class="modern-toggle">
+                                            <input type="checkbox" id="enableNotifications" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="toggle-setting">
+                                        <div class="toggle-info">
+                                            <label for="enableSounds">알림음 활성화</label>
+                                            <span class="toggle-description">알림 시 소리를 재생합니다</span>
+                                        </div>
+                                        <label class="modern-toggle">
+                                            <input type="checkbox" id="enableSounds" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- API 설정 탭 -->
+                    <div class="tab-pane" id="api-tab">
+                        <div class="settings-section">
+                            <div class="section-header">
+                                <div class="section-icon">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                                <div class="section-title">
+                                    <h3>쿠팡 파트너스 API</h3>
+                                    <p>쿠팡 파트너스 연동을 위한 API 키를 설정하세요</p>
+                                </div>
+                            </div>
+                            <div class="section-content">
+                                <div class="setting-item">
+                                    <label for="coupangAccessKey">Access Key</label>
+                                    <input type="text" id="coupangAccessKey" class="modern-input wide-input" placeholder="쿠팡파트너스 Access Key를 입력하세요">
+                                </div>
+                                <div class="setting-item">
+                                    <label for="coupangSecretKey">Secret Key</label>
+                                    <input type="password" id="coupangSecretKey" class="modern-input wide-input" placeholder="쿠팡파트너스 Secret Key를 입력하세요">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-section">
+                            <div class="section-header">
+                                <div class="section-icon">
+                                    <i class="fas fa-globe"></i>
+                                </div>
+                                <div class="section-title">
+                                    <h3>알리익스프레스 API</h3>
+                                    <p>알리익스프레스 제휴 링크 생성을 위한 API 설정</p>
+                                </div>
+                            </div>
+                            <div class="section-content">
+                                <div class="setting-item">
+                                    <label for="aliexpressAppKey">App Key</label>
+                                    <input type="text" id="aliexpressAppKey" class="modern-input wide-input" placeholder="알리익스프레스 App Key를 입력하세요">
+                                </div>
+                                <div class="setting-item">
+                                    <label for="aliexpressAppSecret">App Secret</label>
+                                    <input type="password" id="aliexpressAppSecret" class="modern-input wide-input" placeholder="알리익스프레스 App Secret을 입력하세요">
+                                </div>
+                                <div class="setting-item">
+                                    <label for="aliexpressTrackingId">Tracking ID</label>
+                                    <input type="text" id="aliexpressTrackingId" class="modern-input wide-input" placeholder="알리익스프레스 Tracking ID를 입력하세요">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 다운로드 설정 탭 -->
+                    <div class="tab-pane" id="download-tab">
+                        <div class="settings-section">
+                            <div class="section-header">
+                                <div class="section-icon">
+                                    <i class="fas fa-folder"></i>
+                                </div>
+                                <div class="section-title">
+                                    <h3>저장 경로</h3>
+                                    <p>다운로드한 파일이 저장될 위치를 설정하세요</p>
+                                </div>
+                            </div>
+                            <div class="section-content">
+                                <div class="setting-item">
+                                    <label for="downloadPath">다운로드 폴더</label>
+                                    <div class="path-input-group">
+                                        <input type="text" id="downloadPath" class="modern-input" placeholder="다운로드 경로를 선택하세요" readonly>
+                                        <button class="browse-btn" onclick="selectDownloadPath()">
+                                            <i class="fas fa-folder-open"></i>
+                                            찾아보기
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-section">
+                            <div class="section-header">
+                                <div class="section-icon">
+                                    <i class="fas fa-video"></i>
+                                </div>
+                                <div class="section-title">
+                                    <h3>비디오 품질</h3>
+                                    <p>다운로드할 비디오의 품질을 선택하세요</p>
+                                </div>
+                            </div>
+                            <div class="section-content">
+                                <div class="setting-item">
+                                    <label for="videoQuality">비디오 품질</label>
+                                    <div class="select-wrapper">
+                                        <select id="videoQuality" class="modern-select">
+                                            <option value="best">최고 품질</option>
+                                            <option value="720p">720p (HD)</option>
+                                            <option value="480p">480p</option>
+                                            <option value="360p">360p</option>
+                                        </select>
+                                        <i class="fas fa-chevron-down select-arrow"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 설정 저장 버튼 -->
+                <div class="settings-actions">
+                    <button class="btn-secondary" onclick="resetSettings()">
+                        <i class="fas fa-undo"></i>
+                        초기화
+                    </button>
+                    <button class="btn-primary" onclick="saveSettings()">
+                        <i class="fas fa-save"></i>
+                        저장
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=1.5"></script>
 </body>
 </html>

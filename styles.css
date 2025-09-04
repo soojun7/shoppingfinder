@@ -4791,6 +4791,14 @@ body {
     overflow-y: auto;
 }
 
+/* 설정 모달 스타일 */
+.settings-modal {
+    max-width: 900px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
 .platform-selector {
     margin-bottom: 32px;
 }

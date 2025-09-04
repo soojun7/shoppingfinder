@@ -2158,28 +2158,8 @@ function showSearch(event) {
         event.preventDefault();
     }
     
-    // 탭 활성화 상태 변경
-    setActiveTab('search');
-    
-    // 모든 섹션 숨기기
-    document.querySelector('.search-section').style.display = 'block';
-    const favoritesSection = document.getElementById('favoritesSection');
-    if (favoritesSection) favoritesSection.style.display = 'none';
-    
-    // 결과 섹션 표시 (검색 결과가 있는 경우)
-    if (allResults.length > 0) {
-        resultsSection.classList.add('show');
-        displaySearchResults(allResults, currentQuery, currentCountry, false);
-    } else {
-        resultsSection.classList.remove('show');
-    }
-    
-    // 간편링크생성 모달이 열려있지 않을 때만 사이드바 닫기
-    const linkModal = document.getElementById('linkGeneratorModal');
-    if (!linkModal || (!linkModal.classList.contains('show') && linkModal.style.display !== 'flex')) {
-        // 모바일에서 사이드바 닫기
-        closeSidebar();
-    }
+    // 라우터를 통해 네비게이션
+    navigateToRoute('/search');
 }
 
 function showFavorites(event) {
@@ -2187,21 +2167,8 @@ function showFavorites(event) {
         event.preventDefault();
     }
     
-    // 탭 활성화 상태 변경
-    setActiveTab('favorites');
-    
-    // 검색 섹션 숨기기
-    document.querySelector('.search-section').style.display = 'none';
-    
-    // 즐겨찾기 목록 표시
-    displayFavorites();
-    
-    // 간편링크생성 모달이 열려있지 않을 때만 사이드바 닫기
-    const linkModal = document.getElementById('linkGeneratorModal');
-    if (!linkModal || (!linkModal.classList.contains('show') && linkModal.style.display !== 'flex')) {
-        // 모바일에서 사이드바 닫기
-        closeSidebar();
-    }
+    // 라우터를 통해 네비게이션
+    navigateToRoute('/favorites');
 }
 
 function showSettings(event) {
@@ -2209,18 +2176,8 @@ function showSettings(event) {
         event.preventDefault();
     }
     
-    // 간편링크생성 모달이 열려있는지 확인
-    const linkModal = document.getElementById('linkGeneratorModal');
-    const isModalOpen = linkModal && (linkModal.classList.contains('show') || linkModal.style.display === 'flex');
-    
-    if (isModalOpen) {
-        // 모달이 열려있으면 모달 상태를 localStorage에 저장
-        localStorage.setItem('linkGeneratorModalOpen', 'true');
-        localStorage.setItem('linkGeneratorPlatform', document.querySelector('.platform-tab.active')?.dataset.platform || 'coupang');
-    }
-    
-    // 설정 페이지로 이동
-    window.location.href = 'settings.html';
+    // 라우터를 통해 네비게이션
+    navigateToRoute('/settings');
 }
 
 function setActiveTab(tabName) {
@@ -6410,7 +6367,17 @@ window.initializeSettingsTabs = initializeSettingsTabs;
 
 // ==================== 간편링크생성 기능 ====================
 
-// 간편링크생성 모달 열기
+// 간편링크생성 모달 열기 (라우터용)
+function showLinkGeneratorRoute(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    
+    // 라우터를 통해 네비게이션
+    navigateToRoute('/linkcreate');
+}
+
+// 간편링크생성 모달 열기 (내부 함수)
 function showLinkGenerator() {
     const modal = document.getElementById('linkGeneratorModal');
     if (modal) {
@@ -6452,6 +6419,11 @@ function closeLinkGeneratorModal() {
         if (aliexpressResult) aliexpressResult.style.display = 'none';
         
         console.log('간편링크생성 모달 닫힘');
+        
+        // 현재 경로가 /linkcreate인 경우 홈으로 이동
+        if (currentPage === '/linkcreate') {
+            navigateToRoute('/search');
+        }
     }
 }
 
@@ -6749,6 +6721,7 @@ function updateLinkGeneratorUI() {
 
 // 전역 함수로 등록
 window.showLinkGenerator = showLinkGenerator;
+window.showLinkGeneratorRoute = showLinkGeneratorRoute;
 window.closeLinkGeneratorModal = closeLinkGeneratorModal;
 window.switchPlatform = switchPlatform;
 window.generateCoupangLink = generateCoupangLink;
@@ -6758,7 +6731,9 @@ window.switchDisclaimer = switchDisclaimer;
 window.copyDisclaimer = copyDisclaimer;
 window.updateLinkGeneratorUI = updateLinkGeneratorUI;
 window.showSettings = showSettings;
-window.checkUrlParams = checkUrlParams;
+window.showSettingsModal = showSettingsModal;
+window.closeSettingsModal = closeSettingsModal;
+window.navigateToRoute = navigateToRoute;
 
 // 모달 외부 클릭 시 닫기
 document.addEventListener('click', function(e) {
@@ -6778,30 +6753,190 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// URL 파라미터 확인하여 모달 상태 복원
-function checkUrlParams() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const openModal = urlParams.get('openModal');
-    const platform = urlParams.get('platform') || 'coupang';
+// ==================== SPA 라우팅 시스템 ====================
+
+// 라우트 정의
+const routes = {
+    '/': () => showSearchPage(),
+    '/search': () => showSearchPage(),
+    '/favorites': () => showFavoritesPage(),
+    '/linkcreate': () => showLinkGeneratorPage(),
+    '/settings': () => showSettingsPage()
+};
+
+// 현재 활성 페이지
+let currentPage = '/search';
+
+// 라우터 초기화
+function initRouter() {
+    // 브라우저 뒤로가기/앞으로가기 처리
+    window.addEventListener('popstate', (event) => {
+        const path = window.location.pathname;
+        navigateToRoute(path, false);
+    });
     
-    if (openModal === 'linkGenerator') {
-        // 페이지 로드 후 모달 열기
-        setTimeout(() => {
-            showLinkGenerator();
-            if (platform === 'aliexpress') {
-                switchPlatform('aliexpress');
-                switchDisclaimer('aliexpress');
-            }
-        }, 100);
-        
-        // URL에서 파라미터 제거 (브라우저 히스토리에 영향 없이)
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
+    // 초기 라우트 처리
+    const initialPath = window.location.pathname;
+    if (routes[initialPath]) {
+        navigateToRoute(initialPath, false);
+    } else {
+        navigateToRoute('/search', true);
     }
 }
 
-// 페이지 로드 시 URL 파라미터 확인
-document.addEventListener('DOMContentLoaded', checkUrlParams);
+// 라우트 네비게이션
+function navigateToRoute(path, pushState = true) {
+    if (routes[path]) {
+        currentPage = path;
+        
+        // URL 업데이트 (pushState가 true일 때만)
+        if (pushState) {
+            window.history.pushState({ path }, '', path);
+        }
+        
+        // 라우트 핸들러 실행
+        routes[path]();
+        
+        // 활성 탭 업데이트
+        updateActiveNavigation(path);
+        
+        console.log(`라우트 변경: ${path}`);
+    } else {
+        console.warn(`알 수 없는 라우트: ${path}`);
+        navigateToRoute('/search', true);
+    }
+}
+
+// 네비게이션 활성 상태 업데이트
+function updateActiveNavigation(path) {
+    // 모든 네비게이션 아이템에서 active 클래스 제거
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // 현재 경로에 해당하는 네비게이션 아이템에 active 클래스 추가
+    let activeSelector = '';
+    switch (path) {
+        case '/':
+        case '/search':
+            activeSelector = '.nav-item:has([onclick*="showSearch"])';
+            break;
+        case '/favorites':
+            activeSelector = '.nav-item:has([onclick*="showFavorites"])';
+            break;
+        case '/linkcreate':
+            activeSelector = '.nav-item:has([onclick*="showLinkGenerator"])';
+            break;
+        case '/settings':
+            activeSelector = '.nav-item:has([onclick*="showSettings"])';
+            break;
+    }
+    
+    if (activeSelector) {
+        const activeItem = document.querySelector(activeSelector);
+        if (activeItem) {
+            activeItem.classList.add('active');
+        }
+    }
+}
+
+// 페이지 핸들러들
+function showSearchPage() {
+    // 모든 모달 닫기
+    closeAllModals();
+    
+    // 검색 섹션 표시
+    document.querySelector('.search-section').style.display = 'block';
+    const favoritesSection = document.getElementById('favoritesSection');
+    if (favoritesSection) favoritesSection.style.display = 'none';
+    
+    // 검색 결과가 있으면 표시
+    if (allResults.length > 0) {
+        resultsSection.classList.add('show');
+        displaySearchResults(allResults, currentQuery, currentCountry, false);
+    } else {
+        resultsSection.classList.remove('show');
+    }
+    
+    // 사이드바 닫기 (모바일)
+    closeSidebar();
+}
+
+function showFavoritesPage() {
+    // 모든 모달 닫기
+    closeAllModals();
+    
+    // 검색 섹션 숨기기
+    document.querySelector('.search-section').style.display = 'none';
+    
+    // 즐겨찾기 목록 표시
+    displayFavorites();
+    
+    // 사이드바 닫기 (모바일)
+    closeSidebar();
+}
+
+function showLinkGeneratorPage() {
+    // 다른 모달들 닫기
+    closeSettingsModal();
+    
+    // 간편링크생성 모달 열기
+    showLinkGenerator();
+    
+    // 사이드바 닫기 (모바일)
+    closeSidebar();
+}
+
+function showSettingsPage() {
+    // 다른 모달들 닫기
+    closeLinkGeneratorModal();
+    
+    // 설정 모달 열기
+    showSettingsModal();
+    
+    // 사이드바 닫기 (모바일)
+    closeSidebar();
+}
+
+// 모든 모달 닫기
+function closeAllModals() {
+    closeLinkGeneratorModal();
+    closeSettingsModal();
+}
+
+// 설정 모달 관련 함수들
+function showSettingsModal() {
+    const modal = document.getElementById('settingsModal');
+    if (modal) {
+        modal.classList.add('show');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        // 설정 로드
+        loadSettings();
+        
+        console.log('설정 모달 열림');
+    }
+}
+
+function closeSettingsModal() {
+    const modal = document.getElementById('settingsModal');
+    if (modal) {
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        
+        console.log('설정 모달 닫힘');
+        
+        // 현재 경로가 /settings인 경우 홈으로 이동
+        if (currentPage === '/settings') {
+            navigateToRoute('/search');
+        }
+    }
+}
+
+// 페이지 로드 시 라우터 초기화
+document.addEventListener('DOMContentLoaded', initRouter);
 
 // 앱 초기화 완료 로그
 console.log('🎉 쇼핑파인더가 준비되었습니다!');
