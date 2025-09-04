@@ -1629,16 +1629,19 @@ body {
 
 .input-wrapper {
     position: relative;
-    display: flex;
-    align-items: center;
+    display: block;
+    width: 100%;
+    overflow: hidden;
 }
 
 .input-wrapper i {
     position: absolute;
     left: 16px;
+    top: 18px;
     color: var(--text-secondary);
     font-size: 16px;
-    z-index: 1;
+    z-index: 2;
+    pointer-events: none;
 }
 
 .input-wrapper input {
@@ -1650,6 +1653,9 @@ body {
     background: var(--bg-primary);
     color: var(--text-primary);
     transition: all var(--transition-fast);
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
 }
 
 .input-wrapper input:focus {
@@ -1662,21 +1668,31 @@ body {
     color: var(--text-secondary);
 }
 
-.toggle-password {
-    position: absolute;
-    right: 16px;
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 4px;
-    border-radius: var(--radius-sm);
-    transition: all var(--transition-fast);
+/* input 박스 밑의 불필요한 점 제거 */
+.input-wrapper input::before,
+.input-wrapper input::after {
+    display: none !important;
+    content: none !important;
 }
 
-.toggle-password:hover {
-    color: var(--primary-color);
-    background: rgba(255, 0, 80, 0.1);
+.input-wrapper::before,
+.input-wrapper::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* 비밀번호 토글 버튼 제거됨 */
+
+/* 팝업 진동 애니메이션 */
+@keyframes shake {
+    0%, 100% { transform: translateX(0) scale(1); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px) scale(1.02); }
+    20%, 40%, 60%, 80% { transform: translateX(10px) scale(1.02); }
+}
+
+.auth-modal-content.shake {
+    animation: shake 0.6s ease-in-out;
+    animation-iteration-count: 1;
 }
 
 .password-strength {
@@ -1940,6 +1956,14 @@ body {
         padding: 14px 14px 14px 44px;
         font-size: 16px; /* iOS 줌 방지 */
     }
+    
+    .input-wrapper i {
+        left: 14px;
+        top: 16px;
+        font-size: 14px;
+    }
+    
+    /* 비밀번호 토글 버튼 제거됨 */
     
     .social-login {
         gap: 10px;

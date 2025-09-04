@@ -1405,6 +1405,14 @@ document.addEventListener('keydown', function(e) {
         
         if (isAuthModalForced) {
             showToast('로그인이 필요합니다', 'warning');
+            // 진동 효과 추가
+            const modalContent = authModal.querySelector('.auth-modal-content');
+            if (modalContent) {
+                modalContent.classList.add('shake');
+                setTimeout(() => {
+                    modalContent.classList.remove('shake');
+                }, 500);
+            }
             return;
         }
         
@@ -2261,43 +2269,110 @@ function showEmptyFavorites() {
 
 // 크레딧 관리 시스템
 let userCredits;
+let creditInitialized = false; // 크레딧 초기화 상태 추적
+let lastKnownCredits = null; // 마지막으로 알려진 크레딧 값
 
 // 크레딧 초기화 함수
 function initializeCredits() {
-    // 이미 초기화된 경우 재초기화하지 않음
-    if (typeof userCredits !== 'undefined' && userCredits !== null) {
-        console.log(`크레딧 이미 초기화됨: ${userCredits}`);
+    // 스택 트레이스로 호출 위치 추적
+    console.trace('🚨 initializeCredits 호출됨!');
+    
+    console.log('🔍 크레딧 초기화 시작:', {
+        userCredits,
+        creditInitialized,
+        lastKnownCredits,
+        currentUser: currentUser?.credits,
+        localStorage: localStorage.getItem('userCredits'),
+        timestamp: new Date().toISOString()
+    });
+    
+    // 이미 초기화된 경우 재초기화하지 않음 (강력한 보호)
+    if (creditInitialized && typeof userCredits !== 'undefined' && userCredits !== null && userCredits > 0) {
+        console.log(`✅ 크레딧 이미 초기화됨: ${userCredits} (보호됨)`);
         return userCredits;
+    }
+    
+    // Supabase에서 실제 크레딧 값 가져오기 (최우선)
+    let supabaseCredits = null;
+    if (currentUser && currentUser.id && supabase) {
+        // Supabase에서 최신 크레딧 정보 조회
+        getUserProfile(currentUser.id).then(profile => {
+            if (profile && profile.credits !== null) {
+                console.log(`Supabase에서 크레딧 조회: ${profile.credits}`);
+                // Supabase 값이 localStorage와 다르면 Supabase 값으로 동기화
+                const localCredits = parseInt(localStorage.getItem('userCredits'));
+                if (localCredits !== profile.credits) {
+                    console.log(`크레딧 동기화: localStorage(${localCredits}) -> Supabase(${profile.credits})`);
+                    userCredits = profile.credits;
+                    localStorage.setItem('userCredits', userCredits.toString());
+                    updateCreditDisplay();
+                }
+            }
+        }).catch(error => {
+            console.error('Supabase 크레딧 조회 실패:', error);
+        });
     }
     
     // localStorage에서 크레딧 값 가져오기
     const savedCredits = parseInt(localStorage.getItem('userCredits'));
     
-    // currentUser에서 크레딧 값 가져오기
+    // currentUser에서 크레딧 값 가져오기 (로그인된 경우에만)
     let userObjectCredits = null;
     if (currentUser && typeof currentUser.credits === 'number') {
         userObjectCredits = currentUser.credits;
     }
     
-    // 우선순위: localStorage > currentUser.credits > 기본값(1250)
-    if (savedCredits && !isNaN(savedCredits) && savedCredits > 0) {
-        userCredits = savedCredits;
-        console.log(`크레딧 초기화: localStorage에서 ${userCredits} 크레딧 로드`);
-    } else if (userObjectCredits && !isNaN(userObjectCredits) && userObjectCredits >= 0) {
+    // 우선순위: currentUser.credits > localStorage > 마지막 알려진 크레딧 > 기본값(1250)
+    if (userObjectCredits && !isNaN(userObjectCredits) && userObjectCredits >= 0) {
         userCredits = userObjectCredits;
-        console.log(`크레딧 초기화: currentUser에서 ${userCredits} 크레딧 로드`);
+        console.log(`✅ 크레딧 초기화: currentUser에서 ${userCredits} 크레딧 로드`);
+    } else if (savedCredits && !isNaN(savedCredits) && savedCredits >= 0) {
+        userCredits = savedCredits;
+        console.log(`✅ 크레딧 초기화: localStorage에서 ${userCredits} 크레딧 로드`);
+    } else if (lastKnownCredits && lastKnownCredits > 0) {
+        userCredits = lastKnownCredits;
+        console.log(`✅ 크레딧 초기화: 마지막 알려진 크레딧에서 ${userCredits} 크레딧 로드`);
     } else {
+        // 정말 마지막 수단으로만 기본값 사용
+        console.error('🚨🚨🚨 모든 크레딧 소스가 없어서 기본값으로 설정합니다!');
+        console.error('리셋 원인:', {
+            savedCredits,
+            userObjectCredits,
+            lastKnownCredits,
+            currentUser,
+            localStorage_raw: localStorage.getItem('userCredits'),
+            timestamp: new Date().toISOString()
+        });
+        console.trace('기본값 설정 스택 트레이스');
+        
         userCredits = 1250; // 기본값
-        console.log(`크레딧 초기화: 기본값 ${userCredits} 크레딧 설정`);
+        console.log(`❌ 크레딧 초기화: 기본값 ${userCredits} 크레딧 설정`);
     }
     
-    // 초기화 후 localStorage에 저장
+    // 초기화 후 localStorage에 저장 (항상 저장)
     localStorage.setItem('userCredits', userCredits.toString());
+    
+    // 크레딧 초기화 완료 표시
+    creditInitialized = true;
+    lastKnownCredits = userCredits;
+    
+    console.log(`✅ 크레딧 초기화 완료: ${userCredits} (보호 활성화)`);
     
     return userCredits;
 }
 
 function updateCreditDisplay() {
+    // 설정 페이지에서는 크레딧 표시 업데이트 건너뛰기
+    if (window.isSettingsPage) {
+        console.log('설정 페이지에서는 크레딧 표시 업데이트 건너뛰기');
+        return;
+    }
+    
+    // 크레딧 보호 시스템 실행
+    if (creditInitialized) {
+        protectCredits();
+    }
+    
     // userCredits가 정의되지 않은 경우에만 초기화 (한 번만)
     if (typeof userCredits === 'undefined' || userCredits === null) {
         console.log('크레딧 표시 업데이트 중 초기화 필요');
@@ -2314,13 +2389,29 @@ function updateCreditDisplay() {
 }
 
 async function deductCredits(amount) {
+    // 설정 페이지에서는 크레딧 차감 건너뛰기
+    if (window.isSettingsPage) {
+        console.log('설정 페이지에서는 크레딧 차감 건너뛰기');
+        return false;
+    }
+    
     // userCredits가 정의되지 않은 경우에만 초기화
     if (typeof userCredits === 'undefined' || userCredits === null) {
         initializeCredits();
     }
     
     if (userCredits >= amount) {
-        userCredits -= amount;
+            const oldCredits = userCredits;
+    userCredits -= amount;
+    
+    // 크레딧 변경 로깅
+    console.log(`💰 크레딧 차감: ${oldCredits} -> ${userCredits} (차감: ${amount})`);
+    
+    // localStorage에 저장
+    localStorage.setItem('userCredits', userCredits.toString());
+    
+    // 마지막 알려진 크레딧 업데이트
+    lastKnownCredits = userCredits;
         
         // currentUser 객체도 업데이트
         if (currentUser) {
@@ -2330,11 +2421,20 @@ async function deductCredits(amount) {
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
         }
         
-        // Supabase에 업데이트
+        // Supabase에 업데이트 (비동기)
         if (currentUser && supabase) {
-            await updateUserCredits(currentUser.id, userCredits);
-        } else {
-            localStorage.setItem('userCredits', userCredits.toString());
+            updateUserCredits(currentUser.id, userCredits).catch(error => {
+                console.error('Supabase 크레딧 업데이트 실패:', error);
+                // 실패 시 롤백
+                userCredits = oldCredits;
+                localStorage.setItem('userCredits', userCredits.toString());
+                if (currentUser) {
+                    currentUser.credits = userCredits;
+                    sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                }
+                updateCreditDisplay();
+            });
         }
         
         updateCreditDisplay();
@@ -2342,7 +2442,7 @@ async function deductCredits(amount) {
         // 크레딧 차감 애니메이션
         animateCreditChange(-amount);
         
-        console.log(`크레딧 차감: ${amount}, 남은 크레딧: ${userCredits}`);
+        console.log(`크레딧 차감: ${oldCredits} -> ${userCredits} (차감: ${amount})`);
         
         return true;
     } else {
@@ -2352,12 +2452,28 @@ async function deductCredits(amount) {
 }
 
 async function addCredits(amount) {
+    // 설정 페이지에서는 크레딧 추가 건너뛰기
+    if (window.isSettingsPage) {
+        console.log('설정 페이지에서는 크레딧 추가 건너뛰기');
+        return;
+    }
+    
     // userCredits가 정의되지 않은 경우에만 초기화
     if (typeof userCredits === 'undefined' || userCredits === null) {
         initializeCredits();
     }
     
+    const oldCredits = userCredits;
     userCredits += amount;
+    
+    // 크레딧 변경 로깅
+    console.log(`💰 크레딧 추가: ${oldCredits} -> ${userCredits} (추가: ${amount})`);
+    
+    // localStorage에 저장
+    localStorage.setItem('userCredits', userCredits.toString());
+    
+    // 마지막 알려진 크레딧 업데이트
+    lastKnownCredits = userCredits;
     
     // currentUser 객체도 업데이트
     if (currentUser) {
@@ -2367,11 +2483,20 @@ async function addCredits(amount) {
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
     }
     
-    // Supabase에 업데이트
+    // Supabase에 업데이트 (비동기)
     if (currentUser && supabase) {
-        await updateUserCredits(currentUser.id, userCredits);
-    } else {
-        localStorage.setItem('userCredits', userCredits.toString());
+        updateUserCredits(currentUser.id, userCredits).catch(error => {
+            console.error('Supabase 크레딧 업데이트 실패:', error);
+            // 실패 시 롤백
+            userCredits = oldCredits;
+            localStorage.setItem('userCredits', userCredits.toString());
+            if (currentUser) {
+                currentUser.credits = userCredits;
+                sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+            updateCreditDisplay();
+        });
     }
     
     updateCreditDisplay();
@@ -2379,7 +2504,7 @@ async function addCredits(amount) {
     // 크레딧 추가 애니메이션
     animateCreditChange(amount);
     
-    console.log(`크레딧 추가: ${amount}, 총 크레딧: ${userCredits}`);
+    console.log(`크레딧 추가: ${oldCredits} -> ${userCredits} (추가: ${amount})`);
     
     showToast(`${amount} 크레딧이 충전되었습니다! 💰`);
 }
@@ -2424,9 +2549,100 @@ function testCreditSystem() {
     }, 1000);
 }
 
+// 크레딧 지속성 테스트 함수
+function testCreditPersistence() {
+    console.log('=== 크레딧 지속성 테스트 시작 ===');
+    
+    const testCredits = 500;
+    
+    // 1. 크레딧 설정
+    setTestCredits(testCredits);
+    console.log(`1. 크레딧 ${testCredits}으로 설정`);
+    
+    // 2. localStorage 확인
+    const localCredits = parseInt(localStorage.getItem('userCredits'));
+    console.log(`2. localStorage 크레딧: ${localCredits}`);
+    
+    // 3. currentUser 확인
+    console.log(`3. currentUser 크레딧: ${currentUser?.credits}`);
+    
+    // 4. Supabase 동기화 테스트 (로그인된 경우)
+    if (currentUser && currentUser.id && supabase) {
+        syncCreditsFromSupabase().then(synced => {
+            if (synced) {
+                console.log('4. Supabase 동기화 성공');
+            } else {
+                console.log('4. Supabase 동기화 불필요 또는 실패');
+            }
+        });
+    } else {
+        console.log('4. Supabase 동기화 건너뛰기 (로그인되지 않음)');
+    }
+    
+    // 5. 페이지 새로고침 시뮬레이션
+    setTimeout(() => {
+        console.log('5. 페이지 새로고침 시뮬레이션...');
+        const beforeRefresh = userCredits;
+        
+        // userCredits 변수 초기화 (새로고침 시뮬레이션)
+        userCredits = undefined;
+        
+        // 다시 초기화
+        initializeCredits();
+        
+        console.log(`6. 새로고침 후 크레딧: ${userCredits} (이전: ${beforeRefresh})`);
+        
+        if (userCredits === beforeRefresh) {
+            console.log('✅ 크레딧 지속성 테스트 성공!');
+        } else {
+            console.log('❌ 크레딧 지속성 테스트 실패!');
+        }
+        
+        console.log('=== 크레딧 지속성 테스트 완료 ===');
+    }, 2000);
+}
+
 // 전역 함수로 등록 (브라우저 콘솔에서 테스트 가능)
 window.setTestCredits = setTestCredits;
 window.testCreditSystem = testCreditSystem;
+window.testCreditPersistence = testCreditPersistence;
+window.syncCreditsFromSupabase = syncCreditsFromSupabase;
+window.protectCredits = protectCredits;
+
+// 크레딧 상태 확인 함수
+window.checkCreditStatus = function() {
+    console.log('🔍 크레딧 상태 확인:', {
+        userCredits,
+        creditInitialized,
+        lastKnownCredits,
+        localStorage: localStorage.getItem('userCredits'),
+        currentUser: currentUser?.credits,
+        sessionStorage: JSON.parse(sessionStorage.getItem('currentUser') || '{}')?.credits
+    });
+};
+
+// 응급 크레딧 복구 함수
+window.emergencyRecoverCredits = function(amount) {
+    if (!amount || amount <= 0) {
+        console.error('올바른 크레딧 수량을 입력하세요');
+        return;
+    }
+    
+    console.log(`🚨 응급 크레딧 복구: ${amount}`);
+    userCredits = amount;
+    lastKnownCredits = amount;
+    localStorage.setItem('userCredits', userCredits.toString());
+    
+    if (currentUser) {
+        currentUser.credits = userCredits;
+        sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    }
+    
+    updateCreditDisplay();
+    showToast(`크레딧이 ${amount}으로 복구되었습니다!`, 'success');
+    console.log('✅ 응급 크레딧 복구 완료');
+};
 
 function animateCreditChange(amount) {
     const creditAmountElement = document.getElementById('creditAmount');
@@ -2988,6 +3204,14 @@ function closeAuthModal() {
         const isForced = modal.getAttribute('data-force') === 'true';
         if (isForced && !isLoggedIn) {
             showToast('로그인이 필요합니다', 'warning');
+            // 진동 효과 추가
+            const modalContent = modal.querySelector('.auth-modal-content');
+            if (modalContent) {
+                modalContent.classList.add('shake');
+                setTimeout(() => {
+                    modalContent.classList.remove('shake');
+                }, 500);
+            }
             return;
         }
         
@@ -3045,19 +3269,7 @@ function resetAuthForms() {
 }
 
 // 비밀번호 표시/숨기기
-function togglePassword(inputId) {
-    const input = document.getElementById(inputId);
-    const button = input.nextElementSibling;
-    const icon = button.querySelector('i');
-    
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.className = 'fas fa-eye-slash';
-    } else {
-        input.type = 'password';
-        icon.className = 'fas fa-eye';
-    }
-}
+// 비밀번호 토글 기능 제거됨
 
 // 비밀번호 강도 검사
 function checkPasswordStrength(password) {
@@ -3377,7 +3589,7 @@ async function handleSignup(event) {
             email: authData.user.email,
             signupTime: new Date().toISOString(),
             marketingAgreed: agreeMarketing,
-            credits: userProfile?.credits || 10
+            credits: userProfile?.credits || 1250 // Supabase 기본값과 일치
         };
         
         currentUser = userData;
@@ -3486,7 +3698,7 @@ async function createUserProfile(user, name) {
                     email: user.email,
                     full_name: name,
                     display_name: name,
-                    credits: 10, // 기본 크레딧
+                    credits: 1250, // 기본 크레딧 (테이블 기본값과 일치)
                     created_at: new Date().toISOString()
                 }
             ]);
@@ -3542,10 +3754,74 @@ async function updateUserCredits(userId, credits) {
         
         if (error) {
             console.error('크레딧 업데이트 오류:', error);
+            throw error; // 에러를 다시 던져서 호출자가 처리할 수 있도록
+        } else {
+            console.log(`Supabase 크레딧 업데이트 성공: ${credits}`);
         }
     } catch (error) {
         console.error('크레딧 업데이트 실패:', error);
+        throw error; // 에러를 다시 던져서 호출자가 처리할 수 있도록
     }
+}
+
+// 크레딧 보호 함수 - 의도하지 않은 초기화 방지
+function protectCredits() {
+    const currentLocalCredits = parseInt(localStorage.getItem('userCredits'));
+    
+    // 크레딧이 갑자기 1250으로 리셋되었는지 확인
+    if (lastKnownCredits && lastKnownCredits !== 1250 && currentLocalCredits === 1250) {
+        console.warn('🚨 크레딧 초기화 감지! 이전 값으로 복원합니다.');
+        console.log(`복원: ${currentLocalCredits} -> ${lastKnownCredits}`);
+        
+        userCredits = lastKnownCredits;
+        localStorage.setItem('userCredits', userCredits.toString());
+        
+        if (currentUser) {
+            currentUser.credits = userCredits;
+            sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        }
+        
+        updateCreditDisplay();
+        showToast(`크레딧이 복원되었습니다: ${userCredits}`, 'success');
+        return true;
+    }
+    
+    return false;
+}
+
+// 크레딧 동기화 함수 (Supabase에서 최신 크레딧 가져오기)
+async function syncCreditsFromSupabase() {
+    if (!currentUser || !currentUser.id || !supabase) {
+        console.log('크레딧 동기화 건너뛰기: 사용자 정보 또는 Supabase 없음');
+        return;
+    }
+    
+    try {
+        const profile = await getUserProfile(currentUser.id);
+        if (profile && profile.credits !== null) {
+            const localCredits = parseInt(localStorage.getItem('userCredits'));
+            if (localCredits !== profile.credits) {
+                console.log(`크레딧 동기화: localStorage(${localCredits}) -> Supabase(${profile.credits})`);
+                userCredits = profile.credits;
+                localStorage.setItem('userCredits', userCredits.toString());
+                
+                // currentUser 객체도 업데이트
+                if (currentUser) {
+                    currentUser.credits = userCredits;
+                    sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                }
+                
+                updateCreditDisplay();
+                return true; // 동기화 성공
+            }
+        }
+    } catch (error) {
+        console.error('크레딧 동기화 실패:', error);
+    }
+    
+    return false; // 동기화 불필요 또는 실패
 }
 
 // 비밀번호 재설정 모달 열기
@@ -3727,36 +4003,49 @@ async function signupWithKakao() {
 
 // 로그아웃
 async function logout() {
+    console.log('🚪 로그아웃 시작');
     const confirmLogout = confirm('정말 로그아웃하시겠습니까?');
     
     if (confirmLogout) {
         try {
+            // 현재 크레딧 백업
+            const currentCredits = userCredits;
+            console.log('💰 로그아웃 전 크레딧 백업:', currentCredits);
+            
             // 기존 사용자 메뉴 제거
             const existingMenu = document.querySelector('.user-menu');
             if (existingMenu) {
                 existingMenu.remove();
             }
             
-            // Supabase 로그아웃
+            // Supabase 로그아웃 (강제)
             if (supabase) {
+                console.log('🔐 Supabase 로그아웃 시작');
                 const { error } = await supabase.auth.signOut();
                 if (error) {
                     console.error('Supabase 로그아웃 오류:', error);
                 }
+                console.log('✅ Supabase 로그아웃 완료');
             }
             
             // 로컬 상태 초기화
             currentUser = null;
             isLoggedIn = false;
             isAdmin = false;
-            userCredits = 0;
+            creditInitialized = false; // 크레딧 초기화 상태 리셋
             
             // 로컬 스토리지 및 세션 스토리지 정리
             localStorage.removeItem('currentUser');
             sessionStorage.removeItem('currentUser');
-            localStorage.removeItem('userCredits');
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('isAdmin');
+            
+            // 크레딧 복원
+            if (currentCredits && currentCredits > 0) {
+                userCredits = currentCredits;
+                localStorage.setItem('userCredits', userCredits.toString());
+                console.log('💰 크레딧 복원 완료:', userCredits);
+            }
             
             // 사용자 프로필 이벤트 리스너 초기화
             const userProfile = document.querySelector('.user-profile');
@@ -3775,11 +4064,13 @@ async function logout() {
             updateCreditDisplay();
             
             showToast('로그아웃되었습니다');
+            console.log('✅ 로그아웃 완료');
             
-            // 잠시 후 로그인 모달 표시
+            // 페이지 새로고침으로 완전 초기화
             setTimeout(() => {
-                openAuthModal(true); // force = true
-            }, 1500);
+                console.log('🔄 페이지 새로고침으로 완전 로그아웃');
+                window.location.reload();
+            }, 1000);
             
         } catch (error) {
             console.error('로그아웃 처리 오류:', error);
@@ -3922,10 +4213,16 @@ function openSettingsModal(event) {
 }
 
 function closeSettingsModal() {
+    console.log('🔧 설정 모달 닫기 (SPA 방식)');
     const modal = document.getElementById('settingsModal');
     if (modal) {
         modal.classList.remove('show');
         document.body.style.overflow = '';
+    }
+    
+    // 설정이 닫히면 검색 페이지로 돌아가기
+    if (currentRoute === '/settings') {
+        navigateToRoute('/search', true);
     }
 }
 
@@ -3967,19 +4264,7 @@ async function getDefaultDownloadPath() {
     }
 }
 
-// 비밀번호 표시/숨김 토글
-function togglePasswordVisibility(inputId) {
-    const input = document.getElementById(inputId);
-    const button = input.parentElement.querySelector('.toggle-password-btn i');
-    
-    if (input.type === 'password') {
-        input.type = 'text';
-        button.className = 'fas fa-eye-slash';
-    } else {
-        input.type = 'password';
-        button.className = 'fas fa-eye';
-    }
-}
+// 비밀번호 토글 기능 제거됨
 
 // 쿠팡파트너스 API 테스트
 async function testCoupangAPI() {
@@ -4337,10 +4622,11 @@ async function initializeAuth() {
                     enableAllInteractions();
                     
                 } else if (event === 'SIGNED_OUT') {
+                    console.log('🚨 SIGNED_OUT 이벤트 - 크레딧은 유지합니다');
                     currentUser = null;
                     isLoggedIn = false;
                     isAdmin = false;
-                    userCredits = 0;
+                    // userCredits는 로그아웃해도 유지 (사용자 계정과 연결)
                     
                     updateAuthUI();
                     updateCreditDisplay();
@@ -4406,10 +4692,25 @@ async function initializeAuth() {
     console.log('로그인 상태:', isLoggedIn);
     console.log('현재 사용자:', currentUser);
     
-    // 크레딧 초기화 (인증 완료 후)
-    console.log('크레딧 초기화 시작...');
-    initializeCredits();
-    console.log('크레딧 초기화 완료:', userCredits);
+    // 크레딧 초기화 (인증 완료 후) - 설정 페이지에서는 건너뛰기
+    if (!window.isSettingsPage) {
+        console.log('크레딧 초기화 시작...');
+        initializeCredits();
+        console.log('크레딧 초기화 완료:', userCredits);
+        
+        // Supabase에서 크레딧 동기화 (로그인된 경우)
+        if (isLoggedIn && currentUser && currentUser.id && supabase) {
+            setTimeout(() => {
+                syncCreditsFromSupabase().then(synced => {
+                    if (synced) {
+                        console.log('크레딧 동기화 완료');
+                    }
+                });
+            }, 1000); // 1초 후 동기화 (초기화 완료 후)
+        }
+    } else {
+        console.log('설정 페이지에서는 크레딧 초기화 건너뛰기');
+    }
     
     // currentUser 객체의 크레딧도 실제 값으로 업데이트
     if (currentUser && typeof userCredits !== 'undefined') {
@@ -4516,6 +4817,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     closeAuthModal();
                 } else {
                     showToast('로그인이 필요합니다', 'warning');
+                    // 진동 효과 추가
+                    const modalContent = authModal.querySelector('.auth-modal-content');
+                    if (modalContent) {
+                        modalContent.classList.add('shake');
+                        setTimeout(() => {
+                            modalContent.classList.remove('shake');
+                        }, 500);
+                    }
                 }
             }
         });
@@ -6290,7 +6599,7 @@ window.closeAuthModal = closeAuthModal;
 window.closeSettingsModal = closeSettingsModal;
 window.switchToSignup = switchToSignup;
 window.switchToLogin = switchToLogin;
-window.togglePassword = togglePassword;
+// togglePassword 함수 제거됨
 window.handleLogin = handleLogin;
 window.handleSignup = handleSignup;
 window.loginWithGoogle = loginWithGoogle;
@@ -6302,7 +6611,7 @@ window.resetSettings = resetSettings;
 window.saveSettings = saveSettings;
 window.selectDownloadPath = selectDownloadPath;
 window.testCoupangAPI = testCoupangAPI;
-window.togglePasswordVisibility = togglePasswordVisibility;
+// togglePasswordVisibility 함수 제거됨
 window.selectCreditPackage = selectCreditPackage;
 window.goBackToPackages = goBackToPackages;
 window.processCardPayment = processCardPayment;
@@ -6762,7 +7071,8 @@ const routes = {
     '/': () => showSearchPage(),
     '/search': () => showSearchPage(),
     '/favorites': () => showFavoritesPage(),
-    '/linkcreate': () => showLinkGeneratorPage()
+    '/linkcreate': () => showLinkGeneratorPage(),
+    '/settings': () => showSettingsPage()
 };
 
 // 현재 활성 라우트
@@ -6784,6 +7094,9 @@ function initRouter() {
             return;
         } else if (hash === 'linkcreate') {
             navigateToRoute('/linkcreate', false);
+            return;
+        } else if (hash === 'settings') {
+            navigateToRoute('/settings', false);
             return;
         }
         // 다른 해시는 제거
@@ -6924,8 +7237,16 @@ function showLinkGeneratorPage() {
 }
 
 function showSettingsPage() {
-    // 설정 페이지로 이동
-    window.location.href = 'settings.html';
+    console.log('🔧 설정 페이지 표시 (SPA 방식)');
+    
+    // 모든 페이지 숨기기
+    hideAllPages();
+    
+    // 설정 모달 표시
+    openSettingsModal();
+    
+    // 네비게이션 업데이트
+    updateNavigation('/settings');
 }
 
 // 모든 모달 닫기

@@ -2265,7 +2265,7 @@ let userCredits;
 // 크레딧 초기화 함수
 function initializeCredits() {
     // 이미 초기화된 경우 재초기화하지 않음
-    if (typeof userCredits !== 'undefined' && userCredits !== null) {
+    if (typeof userCredits !== 'undefined' && userCredits !== null && userCredits > 0) {
         console.log(`크레딧 이미 초기화됨: ${userCredits}`);
         return userCredits;
     }
@@ -2279,16 +2279,27 @@ function initializeCredits() {
         userObjectCredits = currentUser.credits;
     }
     
-    // 우선순위: localStorage > currentUser.credits > 기본값(1250)
-    if (savedCredits && !isNaN(savedCredits) && savedCredits > 0) {
-        userCredits = savedCredits;
-        console.log(`크레딧 초기화: localStorage에서 ${userCredits} 크레딧 로드`);
-    } else if (userObjectCredits && !isNaN(userObjectCredits) && userObjectCredits >= 0) {
+    // 우선순위: currentUser.credits > localStorage > 기본값(1250) - 절대 리셋하지 않음
+    if (userObjectCredits && !isNaN(userObjectCredits) && userObjectCredits >= 0) {
         userCredits = userObjectCredits;
-        console.log(`크레딧 초기화: currentUser에서 ${userCredits} 크레딧 로드`);
+        console.log(`✅ 크레딧 초기화: currentUser에서 ${userCredits} 크레딧 로드`);
+    } else if (savedCredits && !isNaN(savedCredits) && savedCredits >= 0) {
+        userCredits = savedCredits;
+        console.log(`✅ 크레딧 초기화: localStorage에서 ${userCredits} 크레딧 로드`);
     } else {
+        // 정말 마지막 수단으로만 기본값 사용
+        console.error('🚨🚨🚨 모든 크레딧 소스가 없어서 기본값으로 설정합니다!');
+        console.error('리셋 원인:', {
+            savedCredits,
+            userObjectCredits,
+            currentUser,
+            localStorage_raw: localStorage.getItem('userCredits'),
+            timestamp: new Date().toISOString()
+        });
+        console.trace('기본값 설정 스택 트레이스');
+        
         userCredits = 1250; // 기본값
-        console.log(`크레딧 초기화: 기본값 ${userCredits} 크레딧 설정`);
+        console.log(`❌ 크레딧 초기화: 기본값 ${userCredits} 크레딧 설정`);
     }
     
     // 초기화 후 localStorage에 저장
@@ -3377,7 +3388,7 @@ async function handleSignup(event) {
             email: authData.user.email,
             signupTime: new Date().toISOString(),
             marketingAgreed: agreeMarketing,
-            credits: userProfile?.credits || 10
+            credits: userProfile?.credits || 1250 // Supabase 기본값과 일치
         };
         
         currentUser = userData;
@@ -3486,7 +3497,7 @@ async function createUserProfile(user, name) {
                     email: user.email,
                     full_name: name,
                     display_name: name,
-                    credits: 10, // 기본 크레딧
+                    credits: 1250, // 기본 크레딧 (테이블 기본값과 일치)
                     created_at: new Date().toISOString()
                 }
             ]);
@@ -3727,36 +3738,48 @@ async function signupWithKakao() {
 
 // 로그아웃
 async function logout() {
+    console.log('🚪 로그아웃 시작');
     const confirmLogout = confirm('정말 로그아웃하시겠습니까?');
     
     if (confirmLogout) {
         try {
+            // 현재 크레딧 백업
+            const currentCredits = userCredits;
+            console.log('💰 로그아웃 전 크레딧 백업:', currentCredits);
+            
             // 기존 사용자 메뉴 제거
             const existingMenu = document.querySelector('.user-menu');
             if (existingMenu) {
                 existingMenu.remove();
             }
             
-            // Supabase 로그아웃
+            // Supabase 로그아웃 (강제)
             if (supabase) {
+                console.log('🔐 Supabase 로그아웃 시작');
                 const { error } = await supabase.auth.signOut();
                 if (error) {
                     console.error('Supabase 로그아웃 오류:', error);
                 }
+                console.log('✅ Supabase 로그아웃 완료');
             }
             
             // 로컬 상태 초기화
             currentUser = null;
             isLoggedIn = false;
             isAdmin = false;
-            userCredits = 0;
             
             // 로컬 스토리지 및 세션 스토리지 정리
             localStorage.removeItem('currentUser');
             sessionStorage.removeItem('currentUser');
-            localStorage.removeItem('userCredits');
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('isAdmin');
+            
+            // 크레딧 복원
+            if (currentCredits && currentCredits > 0) {
+                userCredits = currentCredits;
+                localStorage.setItem('userCredits', userCredits.toString());
+                console.log('💰 크레딧 복원 완료:', userCredits);
+            }
             
             // 사용자 프로필 이벤트 리스너 초기화
             const userProfile = document.querySelector('.user-profile');
@@ -3775,11 +3798,13 @@ async function logout() {
             updateCreditDisplay();
             
             showToast('로그아웃되었습니다');
+            console.log('✅ 로그아웃 완료');
             
-            // 잠시 후 로그인 모달 표시
+            // 페이지 새로고침으로 완전 초기화
             setTimeout(() => {
-                openAuthModal(true); // force = true
-            }, 1500);
+                console.log('🔄 페이지 새로고침으로 완전 로그아웃');
+                window.location.reload();
+            }, 1000);
             
         } catch (error) {
             console.error('로그아웃 처리 오류:', error);
@@ -3922,10 +3947,16 @@ function openSettingsModal(event) {
 }
 
 function closeSettingsModal() {
+    console.log('🔧 설정 모달 닫기 (SPA 방식)');
     const modal = document.getElementById('settingsModal');
     if (modal) {
         modal.classList.remove('show');
         document.body.style.overflow = '';
+    }
+    
+    // 설정이 닫히면 검색 페이지로 돌아가기
+    if (currentRoute === '/settings') {
+        navigateToRoute('/search', true);
     }
 }
 
@@ -4337,10 +4368,11 @@ async function initializeAuth() {
                     enableAllInteractions();
                     
                 } else if (event === 'SIGNED_OUT') {
+                    console.log('🚨 SIGNED_OUT 이벤트 - 크레딧은 유지합니다');
                     currentUser = null;
                     isLoggedIn = false;
                     isAdmin = false;
-                    userCredits = 0;
+                    // userCredits는 로그아웃해도 유지 (사용자 계정과 연결)
                     
                     updateAuthUI();
                     updateCreditDisplay();
@@ -6762,7 +6794,8 @@ const routes = {
     '/': () => showSearchPage(),
     '/search': () => showSearchPage(),
     '/favorites': () => showFavoritesPage(),
-    '/linkcreate': () => showLinkGeneratorPage()
+    '/linkcreate': () => showLinkGeneratorPage(),
+    '/settings': () => showSettingsPage()
 };
 
 // 현재 활성 라우트
@@ -6784,6 +6817,9 @@ function initRouter() {
             return;
         } else if (hash === 'linkcreate') {
             navigateToRoute('/linkcreate', false);
+            return;
+        } else if (hash === 'settings') {
+            navigateToRoute('/settings', false);
             return;
         }
         // 다른 해시는 제거
@@ -6924,8 +6960,16 @@ function showLinkGeneratorPage() {
 }
 
 function showSettingsPage() {
-    // 설정 페이지로 이동
-    window.location.href = 'settings.html';
+    console.log('🔧 설정 페이지 표시 (SPA 방식)');
+    
+    // 모든 페이지 숨기기
+    hideAllPages();
+    
+    // 설정 모달 표시
+    openSettingsModal();
+    
+    // 네비게이션 업데이트
+    updateNavigation('/settings');
 }
 
 // 모든 모달 닫기
