@@ -63,8 +63,17 @@ async function initializeApp() {
     // DOM 요소 존재 확인
     if (!searchInput || !searchBtn) {
         console.error('필수 DOM 요소를 찾을 수 없습니다.');
+        console.error('searchInput:', searchInput);
+        console.error('searchBtn:', searchBtn);
+        console.error('전체 DOM 요소 확인:');
+        console.error('- searchInput ID:', document.getElementById('searchInput'));
+        console.error('- searchBtn ID:', document.getElementById('searchBtn'));
         return;
     }
+    
+    console.log('✅ DOM 요소 확인 완료:');
+    console.log('- searchInput:', searchInput);
+    console.log('- searchBtn:', searchBtn);
     
     // 크레딧 표시 초기화
     updateCreditDisplay();
@@ -6425,7 +6434,7 @@ function closeLinkGeneratorModal() {
         console.log('간편링크생성 모달 닫힘');
         
         // 현재 경로가 /linkcreate인 경우 홈으로 이동
-        if (currentPage === '/linkcreate') {
+        if (currentRoute === '/linkcreate') {
             navigateToRoute('/search');
         }
     }
@@ -6768,8 +6777,8 @@ const routes = {
     '/settings': () => showSettingsPage()
 };
 
-// 현재 활성 페이지
-let currentPage = '/search';
+// 현재 활성 라우트
+let currentRoute = '/search';
 
 // 라우터 초기화
 function initRouter() {
@@ -6802,7 +6811,7 @@ function initRouter() {
 // 라우트 네비게이션
 function navigateToRoute(path, pushState = true) {
     if (routes[path]) {
-        currentPage = path;
+        currentRoute = path;
         
         // URL 업데이트 (pushState가 true일 때만)
         if (pushState && window.location.pathname !== path) {
@@ -6959,7 +6968,7 @@ function closeSettingsModal() {
         console.log('설정 모달 닫힘');
         
         // 현재 경로가 /settings인 경우 홈으로 이동
-        if (currentPage === '/settings') {
+        if (currentRoute === '/settings') {
             navigateToRoute('/search');
         }
     }
@@ -6973,3 +6982,24 @@ console.log('🎉 쇼핑파인더가 준비되었습니다!');
 console.log('💡 Ctrl/Cmd + K로 검색창에 빠르게 접근할 수 있습니다.');
 console.log('🔍 다양한 국가의 언어로 TikTok 콘텐츠를 검색해보세요!');
 console.log('🔗 간편링크생성으로 쿠팡/알리익스프레스 제휴 링크를 만들어보세요!');
+
+// 디버깅: 전역 함수 확인
+console.log('🔧 전역 함수 확인:');
+console.log('- showSearch:', typeof window.showSearch);
+console.log('- showFavorites:', typeof window.showFavorites);
+console.log('- showSettings:', typeof window.showSettings);
+console.log('- showLinkGeneratorRoute:', typeof window.showLinkGeneratorRoute);
+console.log('- navigateToRoute:', typeof window.navigateToRoute);
+
+// 디버깅: DOM 요소 확인
+console.log('🔧 DOM 요소 확인:');
+console.log('- searchBtn:', document.getElementById('searchBtn'));
+console.log('- searchInput:', document.getElementById('searchInput'));
+
+// 디버깅: 버튼 클릭 테스트
+setTimeout(() => {
+    const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) {
+        console.log('🔧 검색 버튼 이벤트 리스너 수:', searchBtn.getEventListeners ? searchBtn.getEventListeners().length : '확인불가');
+    }
+}, 1000);
