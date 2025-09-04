@@ -1378,7 +1378,7 @@ function closeSidebar() {
     
     // 간편링크생성 모달이 열려있지 않을 때만 overflow 초기화
     const linkModal = document.getElementById('linkGeneratorModal');
-    if (!linkModal || linkModal.style.display !== 'flex') {
+    if (!linkModal || (!linkModal.classList.contains('show') && linkModal.style.display !== 'flex')) {
         document.body.style.overflow = '';
     }
 }
@@ -2176,7 +2176,7 @@ function showSearch(event) {
     
     // 간편링크생성 모달이 열려있지 않을 때만 사이드바 닫기
     const linkModal = document.getElementById('linkGeneratorModal');
-    if (!linkModal || linkModal.style.display !== 'flex') {
+    if (!linkModal || (!linkModal.classList.contains('show') && linkModal.style.display !== 'flex')) {
         // 모바일에서 사이드바 닫기
         closeSidebar();
     }
@@ -2198,7 +2198,7 @@ function showFavorites(event) {
     
     // 간편링크생성 모달이 열려있지 않을 때만 사이드바 닫기
     const linkModal = document.getElementById('linkGeneratorModal');
-    if (!linkModal || linkModal.style.display !== 'flex') {
+    if (!linkModal || (!linkModal.classList.contains('show') && linkModal.style.display !== 'flex')) {
         // 모바일에서 사이드바 닫기
         closeSidebar();
     }
@@ -6395,6 +6395,7 @@ window.initializeSettingsTabs = initializeSettingsTabs;
 function showLinkGenerator() {
     const modal = document.getElementById('linkGeneratorModal');
     if (modal) {
+        modal.classList.add('show');
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
         
@@ -6406,6 +6407,8 @@ function showLinkGenerator() {
         updateLinkGeneratorUI();
         
         console.log('간편링크생성 모달 열림');
+    } else {
+        console.error('간편링크생성 모달을 찾을 수 없습니다.');
     }
 }
 
@@ -6413,16 +6416,21 @@ function showLinkGenerator() {
 function closeLinkGeneratorModal() {
     const modal = document.getElementById('linkGeneratorModal');
     if (modal) {
+        modal.classList.remove('show');
         modal.style.display = 'none';
         document.body.style.overflow = 'auto';
         
         // 입력 필드 초기화
-        document.getElementById('coupangOriginalLink').value = '';
-        document.getElementById('aliexpressOriginalLink').value = '';
+        const coupangInput = document.getElementById('coupangOriginalLink');
+        const aliexpressInput = document.getElementById('aliexpressOriginalLink');
+        if (coupangInput) coupangInput.value = '';
+        if (aliexpressInput) aliexpressInput.value = '';
         
         // 결과 섹션 숨기기
-        document.getElementById('coupangResult').style.display = 'none';
-        document.getElementById('aliexpressResult').style.display = 'none';
+        const coupangResult = document.getElementById('coupangResult');
+        const aliexpressResult = document.getElementById('aliexpressResult');
+        if (coupangResult) coupangResult.style.display = 'none';
+        if (aliexpressResult) aliexpressResult.style.display = 'none';
         
         console.log('간편링크생성 모달 닫힘');
     }
@@ -6743,7 +6751,7 @@ document.addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         const linkModal = document.getElementById('linkGeneratorModal');
-        if (linkModal && linkModal.style.display === 'flex') {
+        if (linkModal && (linkModal.classList.contains('show') || linkModal.style.display === 'flex')) {
             closeLinkGeneratorModal();
         }
     }
