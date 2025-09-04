@@ -1375,7 +1375,12 @@ function closeSidebar() {
     
     sidebar.classList.remove('open');
     overlay.classList.remove('show');
-    document.body.style.overflow = '';
+    
+    // 간편링크생성 모달이 열려있지 않을 때만 overflow 초기화
+    const linkModal = document.getElementById('linkGeneratorModal');
+    if (!linkModal || linkModal.style.display !== 'flex') {
+        document.body.style.overflow = '';
+    }
 }
 
 // 키보드 단축키
@@ -2169,8 +2174,12 @@ function showSearch(event) {
         resultsSection.classList.remove('show');
     }
     
-    // 모바일에서 사이드바 닫기
-    closeSidebar();
+    // 간편링크생성 모달이 열려있지 않을 때만 사이드바 닫기
+    const linkModal = document.getElementById('linkGeneratorModal');
+    if (!linkModal || linkModal.style.display !== 'flex') {
+        // 모바일에서 사이드바 닫기
+        closeSidebar();
+    }
 }
 
 function showFavorites(event) {
@@ -2187,8 +2196,12 @@ function showFavorites(event) {
     // 즐겨찾기 목록 표시
     displayFavorites();
     
-    // 모바일에서 사이드바 닫기
-    closeSidebar();
+    // 간편링크생성 모달이 열려있지 않을 때만 사이드바 닫기
+    const linkModal = document.getElementById('linkGeneratorModal');
+    if (!linkModal || linkModal.style.display !== 'flex') {
+        // 모바일에서 사이드바 닫기
+        closeSidebar();
+    }
 }
 
 function setActiveTab(tabName) {
