@@ -32,18 +32,23 @@
             <nav class="sidebar-nav">
                 <ul>
                     <li class="nav-item">
-                        <a href="#" class="nav-link" onclick="goBackToSearch(event)">
+                        <a href="index.html" class="nav-link">
                             <i class="fas fa-search"></i>
                             <span>검색</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link" onclick="showFavorites(event)">
+                        <a href="index.html#favorites" class="nav-link">
                             <i class="fas fa-heart"></i>
                             <span>즐겨찾기</span>
                         </a>
                     </li>
-
+                    <li class="nav-item">
+                        <a href="index.html#linkcreate" class="nav-link">
+                            <i class="fas fa-link"></i>
+                            <span>간편링크생성</span>
+                        </a>
+                    </li>
                     <li class="nav-item active">
                         <a href="settings.html" class="nav-link">
                             <i class="fas fa-cog"></i>
@@ -414,7 +419,7 @@
     </div>
 
     <script src="supabase-config.js?v=1.4"></script>
-    <script src="script.js?v=1.4"></script>
+    <script src="script.js?v=3.2&t=1725437200"></script>
     <script>
         // 검색 페이지로 돌아가면서 모달 상태 복원
         function goBackToSearch(event) {

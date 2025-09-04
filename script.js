@@ -6776,8 +6776,17 @@ function initRouter() {
         navigateToRoute(path, false);
     });
     
-    // URL 정리 (해시 제거)
+    // 해시 기반 라우팅 처리
     if (window.location.hash) {
+        const hash = window.location.hash.substring(1); // # 제거
+        if (hash === 'favorites') {
+            navigateToRoute('/favorites', false);
+            return;
+        } else if (hash === 'linkcreate') {
+            navigateToRoute('/linkcreate', false);
+            return;
+        }
+        // 다른 해시는 제거
         const cleanUrl = window.location.pathname + window.location.search;
         window.history.replaceState({}, document.title, cleanUrl);
     }
