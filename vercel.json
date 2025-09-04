@@ -13,24 +13,28 @@
   ],
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/main.html"
+    },
+    {
       "source": "/search",
-      "destination": "/index.html"
+      "destination": "/main.html"
     },
     {
       "source": "/favorites",
-      "destination": "/index.html"
+      "destination": "/main.html"
     },
     {
       "source": "/linkcreate",
-      "destination": "/index.html"
+      "destination": "/main.html"
     },
     {
       "source": "/settings",
       "destination": "/settings.html"
     },
     {
-      "source": "/((?!api|_next|_static|favicon.ico|settings.html|admin.html|.*\\.).*)$",
-      "destination": "/index.html"
+      "source": "/((?!api|_next|_static|favicon.ico|settings.html|admin.html|main.html|.*\\.).*)$",
+      "destination": "/main.html"
     }
   ],
   "headers": [
