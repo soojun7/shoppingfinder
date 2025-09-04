@@ -8,24 +8,28 @@
   ],
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/index-new.html"
+    },
+    {
       "source": "/search",
-      "destination": "/index.html"
+      "destination": "/index-new.html"
     },
     {
       "source": "/favorites",
-      "destination": "/index.html"
+      "destination": "/index-new.html"
     },
     {
       "source": "/linkcreate",
-      "destination": "/index.html"
+      "destination": "/index-new.html"
     },
     {
       "source": "/settings",
       "destination": "/settings.html"
     },
     {
-      "source": "/((?!api|_next|_static|favicon.ico|settings.html|admin.html|.*\\.).*)$",
-      "destination": "/index.html"
+      "source": "/((?!api|_next|_static|favicon.ico|settings.html|admin.html|index-new.html|.*\\.).*)$",
+      "destination": "/index-new.html"
     }
   ],
   "headers": [
