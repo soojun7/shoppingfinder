@@ -6762,8 +6762,7 @@ const routes = {
     '/': () => showSearchPage(),
     '/search': () => showSearchPage(),
     '/favorites': () => showFavoritesPage(),
-    '/linkcreate': () => showLinkGeneratorPage(),
-    '/settings': () => showSettingsPage()
+    '/linkcreate': () => showLinkGeneratorPage()
 };
 
 // 현재 활성 라우트
@@ -6916,30 +6915,8 @@ function showLinkGeneratorPage() {
 }
 
 function showSettingsPage() {
-    // 간편링크생성 모달만 조용히 닫기 (라우트 변경 없이)
-    const linkModal = document.getElementById('linkGeneratorModal');
-    if (linkModal) {
-        linkModal.classList.remove('show');
-        linkModal.style.display = 'none';
-        
-        // 입력 필드 초기화
-        const coupangInput = document.getElementById('coupangOriginalLink');
-        const aliexpressInput = document.getElementById('aliexpressOriginalLink');
-        if (coupangInput) coupangInput.value = '';
-        if (aliexpressInput) aliexpressInput.value = '';
-        
-        // 결과 섹션 숨기기
-        const coupangResult = document.getElementById('coupangResult');
-        const aliexpressResult = document.getElementById('aliexpressResult');
-        if (coupangResult) coupangResult.style.display = 'none';
-        if (aliexpressResult) aliexpressResult.style.display = 'none';
-    }
-    
-    // 설정 모달 열기
-    showSettingsModal();
-    
-    // 사이드바 닫기 (모바일)
-    closeSidebar();
+    // 설정 페이지로 이동
+    window.location.href = 'settings.html';
 }
 
 // 모든 모달 닫기

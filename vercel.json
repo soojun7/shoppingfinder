@@ -21,7 +21,7 @@
     },
     {
       "source": "/settings",
-      "destination": "/index.html"
+      "destination": "/settings.html"
     },
     {
       "source": "/((?!api|_next|_static|favicon.ico|.*\\.).*)$",
