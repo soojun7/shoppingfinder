@@ -299,25 +299,17 @@
                     
                     <!-- API 설정 탭 -->
                     <div class="tab-pane" id="api-tab">
-                        <div class="settings-grid">
-                            <!-- API 설정 카드 -->
-                            <div class="settings-card">
-                        <div class="card-header">
-                            <div class="card-icon api">
-                                <i class="fas fa-key"></i>
-                            </div>
-                            <div class="card-title">
-                                <h3>API 설정</h3>
-                                <p>외부 서비스 연동 설정</p>
-                            </div>
-                        </div>
-                        
-                        <div class="card-content">
-                            <div class="setting-group">
-                                <div class="group-header">
+                        <div class="settings-section">
+                            <div class="section-header">
+                                <div class="section-icon">
                                     <i class="fas fa-shopping-cart"></i>
-                                    <span>쿠팡파트너스 API</span>
                                 </div>
+                                <div class="section-title">
+                                    <h3>쿠팡파트너스 API</h3>
+                                    <p>쿠팡파트너스 연동을 위한 API 키를 설정하세요</p>
+                                </div>
+                            </div>
+                            <div class="section-content">
                                 <div class="setting-item">
                                     <label for="coupangAccessKey">Access Key</label>
                                     <input type="text" id="coupangAccessKey" class="modern-input" placeholder="쿠팡파트너스 Access Key를 입력하세요">
@@ -349,12 +341,19 @@
                                     </button>
                                 </div>
                             </div>
-                            
-                            <div class="setting-group">
-                                <div class="group-header">
+                        </div>
+                        
+                        <div class="settings-section">
+                            <div class="section-header">
+                                <div class="section-icon">
                                     <i class="fas fa-link"></i>
-                                    <span>제휴 링크 설정</span>
                                 </div>
+                                <div class="section-title">
+                                    <h3>제휴 링크 설정</h3>
+                                    <p>자동 제휴 링크 생성 옵션을 설정하세요</p>
+                                </div>
+                            </div>
+                            <div class="section-content">
                                 <div class="setting-item">
                                     <div class="toggle-setting">
                                         <div class="toggle-info">
@@ -368,7 +367,6 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
                         </div>
                     </div>
                 </div>
@@ -406,9 +404,34 @@
     <script src="supabase-config.js"></script>
     <script src="script.js"></script>
     <script>
-        // 페이지 로드 시 설정 탭 초기화
+        // 설정 탭 전환 함수
+        function showSettingsTab(tabName) {
+            // 모든 탭 버튼에서 active 클래스 제거
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 모든 탭 패널 숨기기
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.remove('active');
+            });
+            
+            // 선택된 탭 버튼에 active 클래스 추가
+            const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+            
+            // 선택된 탭 패널 표시
+            const activePane = document.getElementById(`${tabName}-tab`);
+            if (activePane) {
+                activePane.classList.add('active');
+            }
+        }
+        
+        // 페이지 로드 시 기본 탭 설정
         document.addEventListener('DOMContentLoaded', function() {
-            initializeSettingsTabs();
+            showSettingsTab('general');
         });
     </script>
 </body>
