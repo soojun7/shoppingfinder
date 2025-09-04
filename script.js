@@ -6815,28 +6815,42 @@ function updateActiveNavigation(path) {
     });
     
     // 현재 경로에 해당하는 네비게이션 아이템에 active 클래스 추가
-    let activeSelector = '';
+    let activeItem = null;
+    
     switch (path) {
         case '/':
         case '/search':
-            activeSelector = '.nav-item:has([onclick*="showSearch"])';
+            // 검색 탭 찾기
+            document.querySelectorAll('.nav-item').forEach(item => {
+                const link = item.querySelector('a[onclick*="showSearch"]');
+                if (link) activeItem = item;
+            });
             break;
         case '/favorites':
-            activeSelector = '.nav-item:has([onclick*="showFavorites"])';
+            // 즐겨찾기 탭 찾기
+            document.querySelectorAll('.nav-item').forEach(item => {
+                const link = item.querySelector('a[onclick*="showFavorites"]');
+                if (link) activeItem = item;
+            });
             break;
         case '/linkcreate':
-            activeSelector = '.nav-item:has([onclick*="showLinkGenerator"])';
+            // 간편링크생성 탭 찾기
+            document.querySelectorAll('.nav-item').forEach(item => {
+                const link = item.querySelector('a[onclick*="showLinkGenerator"]');
+                if (link) activeItem = item;
+            });
             break;
         case '/settings':
-            activeSelector = '.nav-item:has([onclick*="showSettings"])';
+            // 설정 탭 찾기
+            document.querySelectorAll('.nav-item').forEach(item => {
+                const link = item.querySelector('a[onclick*="showSettings"]');
+                if (link) activeItem = item;
+            });
             break;
     }
     
-    if (activeSelector) {
-        const activeItem = document.querySelector(activeSelector);
-        if (activeItem) {
-            activeItem.classList.add('active');
-        }
+    if (activeItem) {
+        activeItem.classList.add('active');
     }
 }
 
@@ -6936,7 +6950,12 @@ function closeSettingsModal() {
 }
 
 // 페이지 로드 시 라우터 초기화
-document.addEventListener('DOMContentLoaded', initRouter);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initRouter);
+} else {
+    // DOM이 이미 로드된 경우 즉시 실행
+    initRouter();
+}
 
 // 앱 초기화 완료 로그
 console.log('🎉 쇼핑파인더가 준비되었습니다!');
