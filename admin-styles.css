@@ -2,8 +2,54 @@
 
 /* 관리자 레이아웃 */
 .admin-layout {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    background: var(--bg-primary);
     min-height: 100vh;
+}
+
+/* 관리자 전용 네비게이션 */
+.admin-only-nav {
+    padding-top: 20px;
+}
+
+.admin-only-nav .admin-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.admin-only-nav .admin-nav-item {
+    margin-bottom: 8px;
+}
+
+.admin-only-nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-fast);
+    font-weight: 500;
+}
+
+.admin-only-nav .nav-link:hover {
+    background: var(--bg-secondary);
+    color: var(--primary-color);
+    transform: translateX(4px);
+}
+
+.admin-only-nav .nav-link.active,
+.admin-only-nav .admin-nav-item.active .nav-link {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.admin-only-nav .nav-link i {
+    width: 20px;
+    text-align: center;
+    font-size: 16px;
 }
 
 /* 관리자 사이드바 */
@@ -45,40 +91,74 @@
     box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
 }
 
-/* 관리자 메인 컨텐츠 */
+/* 관리자 메인 콘텐츠 */
 .admin-main {
-    background: transparent;
+    background: var(--bg-primary);
 }
 
 .admin-main .content-wrapper {
-    padding: 2rem;
+    padding: 32px;
     max-width: none;
+}
+
+/* 관리자 페이지 헤더 */
+.admin-page-header {
+    margin-bottom: 32px;
+    padding: 0 4px;
+}
+
+.admin-header-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.admin-header-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 28px;
+    box-shadow: var(--shadow-lg);
+}
+
+.admin-header-text h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+    background: linear-gradient(135deg, var(--text-primary), var(--primary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.admin-header-text p {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin: 0;
+    font-weight: 400;
 }
 
 /* 관리자 섹션 */
 .admin-section {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+    overflow: hidden;
+    transition: all var(--transition-fast);
 }
 
-.admin-header {
-    margin-bottom: 2rem;
-    text-align: center;
-}
-
-.admin-header h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 0.5rem;
+.admin-section:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
 }
 
 .admin-header p {
@@ -89,51 +169,68 @@
 /* 통계 카드 */
 .admin-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 3rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
 }
 
 .stat-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 2rem;
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--shadow-sm);
+    padding: 24px;
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
+    gap: 16px;
+    transition: all var(--transition-fast);
+    overflow: hidden;
+    position: relative;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
 }
 
 .stat-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--primary-color);
 }
 
 .stat-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 24px;
     color: white;
-    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    box-shadow: var(--shadow-md);
+    flex-shrink: 0;
 }
 
 .stat-info h3 {
-    font-size: 2rem;
+    font-size: 28px;
     font-weight: 700;
-    color: #333;
-    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    line-height: 1.2;
 }
 
 .stat-info p {
-    color: #666;
+    color: var(--text-secondary);
     font-weight: 500;
-    margin-bottom: 0.5rem;
+    margin-bottom: 8px;
+    font-size: 14px;
 }
 
 .stat-change {

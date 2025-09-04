@@ -29,30 +29,7 @@
                 </div>
             </div>
             
-            <nav class="sidebar-nav">
-                <ul>
-                    <li class="nav-item">
-                        <a href="index.html" class="nav-link">
-                            <i class="fas fa-search"></i>
-                            <span>검색</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="settings.html" class="nav-link">
-                            <i class="fas fa-cog"></i>
-                            <span>설정</span>
-                        </a>
-                    </li>
-                    <li class="nav-item active">
-                        <a href="admin.html" class="nav-link">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>관리자</span>
-                        </a>
-                    </li>
-                </ul>
-                
-                <div class="admin-nav-divider"></div>
-                
+            <nav class="sidebar-nav admin-only-nav">
                 <ul class="admin-nav-list">
                     <li class="nav-item admin-nav-item active">
                         <a href="#" class="nav-link" onclick="showAdminTab('dashboard', event)">
@@ -135,11 +112,20 @@
             
             <div class="content-wrapper">
                 <!-- 대시보드 섹션 -->
-                <section class="admin-section" id="dashboardSection">
-                    <div class="settings-page-header">
-                        <h1><i class="fas fa-tachometer-alt"></i> 관리자 대시보드</h1>
-                        <p>시스템 현황을 한눈에 확인하세요</p>
+                <!-- 관리자 페이지 헤더 -->
+                <div class="admin-page-header">
+                    <div class="admin-header-content">
+                        <div class="admin-header-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="admin-header-text">
+                            <h1>관리자 패널</h1>
+                            <p>시스템 관리 및 모니터링</p>
+                        </div>
                     </div>
+                </div>
+
+                <section class="admin-section" id="dashboardSection">
 
                     <div class="admin-stats">
                         <div class="stat-card">

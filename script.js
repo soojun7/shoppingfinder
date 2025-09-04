@@ -4209,7 +4209,7 @@ async function initializeAuth() {
                 
                 isLoggedIn = true;
                 isAdmin = checkAdminStatus(currentUser.email);
-                userCredits = currentUser.credits;
+                // userCredits는 initializeCredits에서 설정됨
             }
             
             // 인증 상태 변화 리스너 설정
@@ -4228,7 +4228,7 @@ async function initializeAuth() {
                     
                     isLoggedIn = true;
                     isAdmin = checkAdminStatus(currentUser.email);
-                    userCredits = currentUser.credits;
+                    // userCredits는 initializeCredits에서 설정됨
                     
                     updateAuthUI();
                     updateCreditDisplay();
@@ -4265,9 +4265,7 @@ async function initializeAuth() {
             currentUser = JSON.parse(sessionUser);
             isLoggedIn = true;
             isAdmin = checkAdminStatus(currentUser.email);
-            // localStorage에 저장된 실제 크레딧 값을 우선 사용
-            const savedCredits = parseInt(localStorage.getItem('userCredits'));
-            userCredits = savedCredits || currentUser.credits || 1250;
+            // userCredits는 initializeCredits에서 설정됨
         } else {
             const localUser = localStorage.getItem('currentUser');
             if (localUser) {
@@ -4275,9 +4273,7 @@ async function initializeAuth() {
                     currentUser = JSON.parse(localUser);
                     isLoggedIn = true;
                     isAdmin = checkAdminStatus(currentUser.email);
-                    // localStorage에 저장된 실제 크레딧 값을 우선 사용
-                    const savedCredits = parseInt(localStorage.getItem('userCredits'));
-                    userCredits = savedCredits || currentUser.credits || 1250;
+                    // userCredits는 initializeCredits에서 설정됨
                     console.log('로컬 스토리지에서 사용자 정보 복원:', currentUser);
                 } catch (error) {
                     console.error('로컬 사용자 정보 파싱 오류:', error);
@@ -4296,12 +4292,7 @@ async function initializeAuth() {
                 };
                 isLoggedIn = true;
                 isAdmin = false;
-                // localStorage에 저장된 실제 크레딧 값을 우선 사용
-                const savedCredits = parseInt(localStorage.getItem('userCredits'));
-                userCredits = savedCredits || currentUser.credits;
-                
-                // 실제 크레딧 값으로 currentUser 업데이트
-                currentUser.credits = userCredits;
+                // userCredits는 initializeCredits에서 설정됨
                 
                 // 세션에 저장
                 sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -4309,8 +4300,26 @@ async function initializeAuth() {
         }
     }
     
+    console.log('=== 인증 초기화 완료 ===');
+    console.log('로그인 상태:', isLoggedIn);
+    console.log('현재 사용자:', currentUser);
+    
     // 크레딧 초기화 (인증 완료 후)
+    console.log('크레딧 초기화 시작...');
     initializeCredits();
+    console.log('크레딧 초기화 완료:', userCredits);
+    
+    // currentUser 객체의 크레딧도 실제 값으로 업데이트
+    if (currentUser && typeof userCredits !== 'undefined') {
+        console.log('currentUser.credits 업데이트:', currentUser.credits, '->', userCredits);
+        currentUser.credits = userCredits;
+        // 업데이트된 사용자 정보를 저장
+        if (isLoggedIn) {
+            sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            console.log('사용자 정보 저장 완료');
+        }
+    }
     
     updateAuthUI();
     updateCreditDisplay();
