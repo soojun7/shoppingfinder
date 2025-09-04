@@ -7071,8 +7071,7 @@ const routes = {
     '/': () => showSearchPage(),
     '/search': () => showSearchPage(),
     '/favorites': () => showFavoritesPage(),
-    '/linkcreate': () => showLinkGeneratorPage(),
-    '/settings': () => showSettingsPage()
+    '/linkcreate': () => showLinkGeneratorPage()
 };
 
 // 현재 활성 라우트
@@ -7094,9 +7093,6 @@ function initRouter() {
             return;
         } else if (hash === 'linkcreate') {
             navigateToRoute('/linkcreate', false);
-            return;
-        } else if (hash === 'settings') {
-            navigateToRoute('/settings', false);
             return;
         }
         // 다른 해시는 제거
@@ -7237,16 +7233,8 @@ function showLinkGeneratorPage() {
 }
 
 function showSettingsPage() {
-    console.log('🔧 설정 페이지 표시 (SPA 방식)');
-    
-    // 모든 페이지 숨기기
-    hideAllPages();
-    
-    // 설정 모달 표시
-    openSettingsModal();
-    
-    // 네비게이션 업데이트
-    updateNavigation('/settings');
+    // 설정 페이지로 이동
+    window.location.href = 'settings.html';
 }
 
 // 모든 모달 닫기

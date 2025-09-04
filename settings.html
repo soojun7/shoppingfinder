@@ -422,6 +422,29 @@
     </script>
     <script src="core.js?v=1.0&fresh=true"></script>
     <script>
+        // 설정 페이지에서 크레딧 초기화 방지
+        window.isSettingsPage = true;
+        
+        // 페이지 로드 시 크레딧 보존
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 설정 페이지 로드됨 - 크레딧 보존 모드 활성화');
+            
+            // localStorage에서 크레딧 복원
+            const savedCredits = localStorage.getItem('userCredits');
+            if (savedCredits && !isNaN(parseInt(savedCredits))) {
+                window.userCredits = parseInt(savedCredits);
+                console.log(`💰 설정 페이지에서 크레딧 복원: ${window.userCredits}`);
+                
+                // 크레딧 표시 업데이트
+                setTimeout(() => {
+                    if (typeof updateCreditDisplay === 'function') {
+                        updateCreditDisplay();
+                    }
+                }, 100);
+            }
+        });
+    </script>
+    <script>
         // 검색 페이지로 돌아가면서 모달 상태 복원
         function goBackToSearch(event) {
             if (event) {
