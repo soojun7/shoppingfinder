@@ -975,7 +975,8 @@ body {
     animation: spin 1s linear infinite;
 }
 
-/* 다크 모드 지원 (추후 구현용) */
+/* 다크 모드 지원 (수동 활성화용 - 자동 활성화 비활성화됨) */
+/* 
 @media (prefers-color-scheme: dark) {
     :root {
         --bg-primary: #1C1C1E;
@@ -988,6 +989,7 @@ body {
         --gray-300: #48484A;
     }
 }
+*/
 
 /* 로드 더 인디케이터 */
 .load-more-indicator {

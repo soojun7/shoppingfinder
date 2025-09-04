@@ -344,14 +344,21 @@ async function translateQuery(query, targetLanguage) {
         return query; // 지원하지 않는 언어면 원본 반환
     }
     
-    console.log(`번역 시작: "${query}" -> ${languageInfo.name}`);
+    console.log(`번역 요청: "${query}" -> ${languageInfo.name}`);
+    
+    // 프로덕션 환경에서는 번역 기능을 비활성화
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        console.log('프로덕션 환경 - 번역 기능 비활성화, 원본 검색어 사용');
+        showToast(`${languageInfo.name} 검색을 위해 원본 검색어를 사용합니다`, 'info');
+        return query;
+    }
     
     const prompt = `다음 한국어 검색어를 ${languageInfo.name}로 자연스럽게 번역해주세요. 번역된 결과만 답변해주세요.
 
 검색어: "${query}"`;
 
     try {
-        console.log('프록시 서버를 통한 번역 요청...');
+        console.log('로컬 프록시 서버를 통한 번역 요청...');
         
         const response = await fetch('http://localhost:3001/api/translate', {
             method: 'POST',
@@ -385,7 +392,14 @@ async function translateQuery(query, targetLanguage) {
     } catch (error) {
         console.error('번역 오류 상세:', error);
         
-        // 사용자에게 오류 알림
+        // 모바일이나 프로덕션 환경에서는 조용히 원본 반환
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            console.log('번역 서버 연결 실패 - 원본 검색어 사용');
+            showToast('번역 서버에 연결할 수 없어 원본 검색어로 검색합니다', 'warning');
+            return query;
+        }
+        
+        // 로컬 환경에서만 alert 표시
         alert(`번역 중 오류가 발생했습니다: ${error.message}\n원본 검색어로 검색을 진행합니다.`);
         
         return query; // 번역 실패 시 원본 반환
@@ -2268,6 +2282,14 @@ async function deductCredits(amount) {
     if (userCredits >= amount) {
         userCredits -= amount;
         
+        // currentUser 객체도 업데이트
+        if (currentUser) {
+            currentUser.credits = userCredits;
+            // 세션과 로컬 스토리지 모두 업데이트
+            sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        }
+        
         // Supabase에 업데이트
         if (currentUser && supabase) {
             await updateUserCredits(currentUser.id, userCredits);
@@ -2280,6 +2302,8 @@ async function deductCredits(amount) {
         // 크레딧 차감 애니메이션
         animateCreditChange(-amount);
         
+        console.log(`크레딧 차감: ${amount}, 남은 크레딧: ${userCredits}`);
+        
         return true;
     } else {
         showLowCreditWarning();
@@ -2290,6 +2314,14 @@ async function deductCredits(amount) {
 async function addCredits(amount) {
     initializeCredits(); // 크레딧 초기화 보장
     userCredits += amount;
+    
+    // currentUser 객체도 업데이트
+    if (currentUser) {
+        currentUser.credits = userCredits;
+        // 세션과 로컬 스토리지 모두 업데이트
+        sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    }
     
     // Supabase에 업데이트
     if (currentUser && supabase) {
@@ -2302,6 +2334,8 @@ async function addCredits(amount) {
     
     // 크레딧 추가 애니메이션
     animateCreditChange(amount);
+    
+    console.log(`크레딧 추가: ${amount}, 총 크레딧: ${userCredits}`);
     
     showToast(`${amount} 크레딧이 충전되었습니다! 💰`);
 }
@@ -4198,7 +4232,9 @@ async function initializeAuth() {
             currentUser = JSON.parse(sessionUser);
             isLoggedIn = true;
             isAdmin = checkAdminStatus(currentUser.email);
-            userCredits = currentUser.credits || 1250;
+            // localStorage에 저장된 실제 크레딧 값을 우선 사용
+            const savedCredits = parseInt(localStorage.getItem('userCredits'));
+            userCredits = savedCredits || currentUser.credits || 1250;
         } else {
             const localUser = localStorage.getItem('currentUser');
             if (localUser) {
@@ -4206,7 +4242,9 @@ async function initializeAuth() {
                     currentUser = JSON.parse(localUser);
                     isLoggedIn = true;
                     isAdmin = checkAdminStatus(currentUser.email);
-                    userCredits = currentUser.credits || 1250;
+                    // localStorage에 저장된 실제 크레딧 값을 우선 사용
+                    const savedCredits = parseInt(localStorage.getItem('userCredits'));
+                    userCredits = savedCredits || currentUser.credits || 1250;
                     console.log('로컬 스토리지에서 사용자 정보 복원:', currentUser);
                 } catch (error) {
                     console.error('로컬 사용자 정보 파싱 오류:', error);
@@ -4225,7 +4263,12 @@ async function initializeAuth() {
                 };
                 isLoggedIn = true;
                 isAdmin = false;
-                userCredits = currentUser.credits;
+                // localStorage에 저장된 실제 크레딧 값을 우선 사용
+                const savedCredits = parseInt(localStorage.getItem('userCredits'));
+                userCredits = savedCredits || currentUser.credits;
+                
+                // 실제 크레딧 값으로 currentUser 업데이트
+                currentUser.credits = userCredits;
                 
                 // 세션에 저장
                 sessionStorage.setItem('currentUser', JSON.stringify(currentUser));

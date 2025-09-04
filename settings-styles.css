@@ -1075,7 +1075,8 @@
     }
 }
 
-/* 다크 모드 지원 */
+/* 다크 모드 지원 (수동 활성화용 - 자동 활성화 비활성화됨) */
+/*
 @media (prefers-color-scheme: dark) {
     .settings-card::before {
         background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
@@ -1098,6 +1099,7 @@
         background: var(--bg-primary);
     }
 }
+*/
 
 /* 애니메이션 */
 .settings-card {
