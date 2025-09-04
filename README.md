@@ -95,3 +95,4 @@ MIT License
 
 💡 **팁**: 검색 결과는 현재 시뮬레이션 데이터를 사용합니다. 실제 TikTok API 연동을 위해서는 TikTok for Developers 계정이 필요합니다.
 # shoppingfinder
+# Force Vercel Redeploy Thu Sep  4 17:52:26 KST 2025
