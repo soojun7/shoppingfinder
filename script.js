@@ -2204,6 +2204,25 @@ function showFavorites(event) {
     }
 }
 
+function showSettings(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    
+    // 간편링크생성 모달이 열려있는지 확인
+    const linkModal = document.getElementById('linkGeneratorModal');
+    const isModalOpen = linkModal && (linkModal.classList.contains('show') || linkModal.style.display === 'flex');
+    
+    if (isModalOpen) {
+        // 모달이 열려있으면 모달 상태를 localStorage에 저장
+        localStorage.setItem('linkGeneratorModalOpen', 'true');
+        localStorage.setItem('linkGeneratorPlatform', document.querySelector('.platform-tab.active')?.dataset.platform || 'coupang');
+    }
+    
+    // 설정 페이지로 이동
+    window.location.href = 'settings.html';
+}
+
 function setActiveTab(tabName) {
     // 모든 탭에서 active 클래스 제거
     document.querySelectorAll('.nav-item').forEach(item => {
@@ -6738,6 +6757,8 @@ window.copyToClipboard = copyToClipboard;
 window.switchDisclaimer = switchDisclaimer;
 window.copyDisclaimer = copyDisclaimer;
 window.updateLinkGeneratorUI = updateLinkGeneratorUI;
+window.showSettings = showSettings;
+window.checkUrlParams = checkUrlParams;
 
 // 모달 외부 클릭 시 닫기
 document.addEventListener('click', function(e) {
@@ -6756,6 +6777,31 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
+
+// URL 파라미터 확인하여 모달 상태 복원
+function checkUrlParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const openModal = urlParams.get('openModal');
+    const platform = urlParams.get('platform') || 'coupang';
+    
+    if (openModal === 'linkGenerator') {
+        // 페이지 로드 후 모달 열기
+        setTimeout(() => {
+            showLinkGenerator();
+            if (platform === 'aliexpress') {
+                switchPlatform('aliexpress');
+                switchDisclaimer('aliexpress');
+            }
+        }, 100);
+        
+        // URL에서 파라미터 제거 (브라우저 히스토리에 영향 없이)
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+    }
+}
+
+// 페이지 로드 시 URL 파라미터 확인
+document.addEventListener('DOMContentLoaded', checkUrlParams);
 
 // 앱 초기화 완료 로그
 console.log('🎉 쇼핑파인더가 준비되었습니다!');

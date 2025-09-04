@@ -7,8 +7,8 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon.png?v=1">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon.png?v=1">
     <link rel="shortcut icon" href="favicon.png?v=1">
-    <link rel="stylesheet" href="styles.css?v=1.2">
-    <link rel="stylesheet" href="settings-styles.css?v=1.2">
+    <link rel="stylesheet" href="styles.css?v=1.4">
+    <link rel="stylesheet" href="settings-styles.css?v=1.4">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -32,7 +32,7 @@
             <nav class="sidebar-nav">
                 <ul>
                     <li class="nav-item">
-                        <a href="index.html" class="nav-link">
+                        <a href="#" class="nav-link" onclick="goBackToSearch(event)">
                             <i class="fas fa-search"></i>
                             <span>검색</span>
                         </a>
@@ -413,8 +413,30 @@
         </div>
     </div>
 
-    <script src="supabase-config.js?v=1.2"></script>
-    <script src="script.js?v=1.2"></script>
+    <script src="supabase-config.js?v=1.4"></script>
+    <script src="script.js?v=1.4"></script>
+    <script>
+        // 검색 페이지로 돌아가면서 모달 상태 복원
+        function goBackToSearch(event) {
+            if (event) {
+                event.preventDefault();
+            }
+            
+            // 모달 상태 정보를 URL 파라미터로 전달
+            const modalOpen = localStorage.getItem('linkGeneratorModalOpen');
+            const platform = localStorage.getItem('linkGeneratorPlatform') || 'coupang';
+            
+            if (modalOpen === 'true') {
+                window.location.href = `index.html?openModal=linkGenerator&platform=${platform}`;
+            } else {
+                window.location.href = 'index.html';
+            }
+            
+            // localStorage 정리
+            localStorage.removeItem('linkGeneratorModalOpen');
+            localStorage.removeItem('linkGeneratorPlatform');
+        }
+    </script>
     <script>
         // 설정 탭 전환 함수
         function showSettingsTab(tabName) {
